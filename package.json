@@ -1,0 +1,18 @@
+{
+  "name": "rxfeign",
+  "version": "1.0.0",
+  "description": "to make request with annotations",
+  "main": "dis/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "juan david correa",
+  "license": "ISC",
+  "dependencies": {
+    "@akanass/rx-http-request": "^3.1.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^6.4.0",
+    "typescript": "^3.3.1"
+  }
+}
