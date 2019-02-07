@@ -1,5 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var rxfeign_1 = require("./rxfeign");
-exports.Http = rxfeign_1.Http;
-exports.HttpRequestException = rxfeign_1.HttpRequestException;
+const { Http, Handler, Request_, HttpInterceptor, HttpObservable, HttpRequestException } = require('./rxfeign');
+exports = {
+    Http, Handler, Request_, HttpInterceptor, HttpObservable, HttpRequestException
+};

@@ -1,1 +1,5 @@
-export {Http,Handler,Request_,HttpInterceptor,HttpObservable,HttpRequestException} from './rxfeign'
+const {Http, Handler, Request_, HttpInterceptor, HttpObservable, HttpRequestException} = require('./rxfeign')
+
+exports = {
+    Http, Handler, Request_, HttpInterceptor, HttpObservable, HttpRequestException
+}
