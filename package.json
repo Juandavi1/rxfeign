@@ -8,6 +8,7 @@
     "url": "https://github.com/Juandavi1/rxfeing.git",
     "type": "git"
   },
+  "files": ["dist/**/*"],
   "keywords": [
     "ts",
     "request",
