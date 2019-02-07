@@ -1,1 +1,1 @@
-declare const Http: any, Handler: any, Request_: any, HttpInterceptor: any, HttpObservable: any, HttpRequestException: any;
+export { Http, Handler, Request_, HttpInterceptor, HttpObservable, HttpRequestException } from './rxfeign';
