@@ -259,7 +259,7 @@ class UtilsHttp {
      * @param obj
      * @param {Headers} headers
      */
-    static prepareHeaders(obj, headers) {
+    static prepareHeaders(obj = {}, headers) {
         Object.keys(obj).forEach(key => !headers.has(obj[key]) ? headers.set(key, obj[key]) : null);
         if (!headers.has('Content-Type')) {
             headers.set('Content-Type', 'application/json');

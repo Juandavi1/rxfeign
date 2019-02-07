@@ -173,6 +173,7 @@ export class Http {
                     qsStringifyOptions: {
                         arrayFormat: 'repeat',
                     },
+                    
                 })
                     .pipe(
                         map(value => this.mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
@@ -309,7 +310,7 @@ class UtilsHttp {
      * @param obj
      * @param {Headers} headers
      */
-    public static prepareHeaders(obj, headers: Headers): void {
+    public static prepareHeaders(obj = {}, headers: Headers): void {
         Object.keys(obj).forEach(key =>
             !headers.has(obj[key]) ? headers.set(key, obj[key]) : null,
         );

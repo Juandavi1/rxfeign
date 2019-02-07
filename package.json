@@ -1,6 +1,6 @@
 {
   "name": "rxfeign",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "to make request with annotations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,7 +8,9 @@
     "url": "https://github.com/Juandavi1/rxfeing.git",
     "type": "git"
   },
-  "files": ["dist/**/*"],
+  "files": [
+    "dist/**/*"
+  ],
   "keywords": [
     "ts",
     "request",
@@ -23,6 +25,7 @@
   "license": "ISC",
   "dependencies": {
     "@akanass/rx-http-request": "^3.1.0",
+    "gulp": "^4.0.0",
     "gulp-cli": "^2.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.4.0",
@@ -30,7 +33,6 @@
     "uglify-js": "^3.4.9"
   },
   "devDependencies": {
-    "gulp": "^4.0.0",
     "gulp-uglify": "^3.0.1",
     "pump": "^3.0.0"
   }
