@@ -1,3 +1,6 @@
+/**
+ * @author Juan David Correa
+ */
 import { Observable } from 'rxjs/internal/Observable';
 import 'reflect-metadata';
 import { RxHttpRequest } from "@akanass/rx-http-request/lib/rx-http-request";

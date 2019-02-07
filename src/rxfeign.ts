@@ -1,3 +1,7 @@
+/**
+ * @author Juan David Correa
+ */
+
 
 import {RxHR, RxHttpRequestResponse} from '@akanass/rx-http-request';
 import {map} from 'rxjs/operators';
@@ -414,8 +418,7 @@ export class HttpRequestException {
         public error: string,
         public statusCode: number,
         public message: string,
-    ) {
-    }
+    ) {}
 }
 
 /**
