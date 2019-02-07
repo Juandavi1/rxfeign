@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const rx_http_request_1 = require("@akanass/rx-http-request");
 const operators_1 = require("rxjs/operators");
 require("reflect-metadata");
-const rx_http_request_2 = require("@akanass/rx-http-request/lib/rx-http-request");
 /**
  *
  */
@@ -22,7 +21,7 @@ const exceptionHandlerMetadataKey = Symbol('__handlerError__');
 /**
  *
  */
-class Http extends rx_http_request_2.RxHttpRequest {
+class Http {
     /**
      *
      * @param {T} interceptor

@@ -7,7 +7,7 @@ import {RxHR, RxHttpRequestResponse} from '@akanass/rx-http-request';
 import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
-import {RxHttpRequest} from "@akanass/rx-http-request/lib/rx-http-request";
+
 /**
  *
  */
@@ -36,8 +36,8 @@ export type Handler = (...request) => HttpRequestException
 /**
  *
  */
-export class Http extends RxHttpRequest {
-  
+export class Http {
+
     private static interceptors: HttpInterceptor[] = [];
 
     /**
@@ -366,7 +366,7 @@ class UtilsHttp {
      * @returns {string}
      */
     public static buildPathParams(pathParam: Param[], argumentsHttp, url: string): string {
-        
+
         url = url.replace(/\s/g, '').trim();
         const wrapOpen = '{';
         const wrapClose = '}';
@@ -418,7 +418,8 @@ export class HttpRequestException {
         public error: string,
         public statusCode: number,
         public message: string,
-    ) {}
+    ) {
+    }
 }
 
 /**
