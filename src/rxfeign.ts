@@ -3,6 +3,7 @@ import {RxHR, RxHttpRequestResponse} from '@akanass/rx-http-request';
 import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
+import {RxHttpRequest} from "@akanass/rx-http-request/lib/rx-http-request";
 /**
  *
  */
@@ -31,8 +32,8 @@ export type Handler = (...request) => HttpRequestException
 /**
  *
  */
-export class Http {
-
+export class Http extends RxHttpRequest {
+  
     private static interceptors: HttpInterceptor[] = [];
 
     /**
@@ -146,7 +147,7 @@ export class Http {
 
                 mainUrl = mainUrl.concat(url).concat(queryParamsUrl === '?' ? '' : queryParamsUrl);
 
-                const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : null;
+                const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : String();
 
                 if (especificHeaders)
                     Object.keys(especificHeaders)
@@ -363,8 +364,8 @@ class UtilsHttp {
     public static buildPathParams(pathParam: Param[], argumentsHttp, url: string): string {
         
         url = url.replace(/\s/g, '').trim();
-        const wrapOpen = '¿';
-        const wrapClose = '?';
+        const wrapOpen = '{';
+        const wrapClose = '}';
 
         pathParam
             .filter(param => param.paramValue)
@@ -386,7 +387,7 @@ class UtilsHttp {
                 Object.keys(obj).forEach(key => {
                     const keyPathParam: PathProperty = Reflect.getMetadata(pathParamPropertyMetadataKey, obj, key);
                     if (keyPathParam)
-                        url = url.replace(`¿${keyPathParam.name}?`, obj[keyPathParam.name]);
+                        url = url.replace(`{${keyPathParam.name}}`, obj[keyPathParam.name]);
                 });
             });
         return url;

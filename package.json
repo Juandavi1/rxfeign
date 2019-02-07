@@ -1,18 +1,36 @@
 {
   "name": "rxfeign",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "to make request with annotations",
   "main": "dis/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "url": "https://github.com/Juandavi1/rxfeing.git",
+    "type": "git"
+  },
+  "keywords": [
+    "ts",
+    "request",
+    "http",
+    "annotations"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": "tsc && gulp ugly && npm update"
   },
   "author": "juan david correa",
   "license": "ISC",
   "dependencies": {
     "@akanass/rx-http-request": "^3.1.0",
+    "gulp-cli": "^2.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.4.0",
-    "typescript": "^3.3.1"
+    "typescript": "^3.3.1",
+    "uglify-js": "^3.4.9"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.0",
+    "gulp-uglify": "^3.0.1",
+    "pump": "^3.0.0"
   }
 }

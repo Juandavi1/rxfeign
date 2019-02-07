@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs/internal/Observable';
 import 'reflect-metadata';
+import { RxHttpRequest } from "@akanass/rx-http-request/lib/rx-http-request";
 /**
  *
  */
@@ -13,7 +14,7 @@ export declare type Handler = (...request: any[]) => HttpRequestException;
 /**
  *
  */
-export declare class Http {
+export declare class Http extends RxHttpRequest {
     private static interceptors;
     /**
      *
