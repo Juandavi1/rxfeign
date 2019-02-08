@@ -320,14 +320,12 @@ class UtilsHttp {
             .filter(param => !param.paramValue)
             .map(param => url += `/${argumentsHttp[param.indexArgument]}`);
         argumentsHttp
-            .filter(arg => typeof arg === 'object')
-            .forEach(obj => {
-            Object.keys(obj).forEach(key => {
-                const keyPathParam = Reflect.getMetadata(pathParamPropertyMetadataKey, obj, key);
-                if (keyPathParam)
-                    url = url.replace(`{${keyPathParam.name}}`, obj[keyPathParam.name]);
-            });
-        });
+            .filter(arg => arg && typeof arg === 'object')
+            .forEach(obj => Object.keys(obj).forEach(key => {
+            const keyPathParam = Reflect.getMetadata(pathParamPropertyMetadataKey, obj, key);
+            if (keyPathParam)
+                url = url.replace(`{${keyPathParam.name}}`, obj[keyPathParam.name]);
+        }));
         return url;
     }
     /**

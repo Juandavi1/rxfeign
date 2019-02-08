@@ -1,6 +1,6 @@
 {
   "name": "rxfeign",
-  "version": "1.0.16",
+  "version": "1.0.18",
   "description": "to make request with annotations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "tsc"
+    "prepublish": "tsc && gulp"
   },
   "author": "juan david correa",
   "license": "ISC",

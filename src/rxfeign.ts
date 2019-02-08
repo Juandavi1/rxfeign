@@ -173,7 +173,7 @@ export class Http {
                     qsStringifyOptions: {
                         arrayFormat: 'repeat',
                     },
-                    
+
                 })
                     .pipe(
                         map(value => this.mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
@@ -387,14 +387,14 @@ class UtilsHttp {
             .map(param => url += `/${argumentsHttp[param.indexArgument]}`);
 
         argumentsHttp
-            .filter(arg => typeof arg === 'object')
-            .forEach(obj => {
+            .filter(arg => arg && typeof arg === 'object')
+            .forEach(obj =>
                 Object.keys(obj).forEach(key => {
                     const keyPathParam: PathProperty = Reflect.getMetadata(pathParamPropertyMetadataKey, obj, key);
                     if (keyPathParam)
                         url = url.replace(`{${keyPathParam.name}}`, obj[keyPathParam.name]);
-                });
-            });
+                })
+            );
         return url;
     }
 
