@@ -1,8 +1,8 @@
-const {task, src, dest} = require('gulp');
-const uglify = require('gulp-uglify');
+const gulp = require('gulp');
+const uglify = require('gulp-uglify-es').default
 
-task('default', () =>
-    src('dist/rxfeign.js')
+gulp.task('default', () =>
+    gulp.src('dist/rxfeign.js')
         .pipe(uglify())
-        .pipe(dest('dist'))
+        .pipe(gulp.dest('dist/'))
 );
