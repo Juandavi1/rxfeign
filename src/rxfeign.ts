@@ -36,268 +36,267 @@ export type Handler = (...request) => HttpRequestException
 /**
  *
  */
-export class Http {
 
-    private static interceptors: HttpInterceptor[] = [];
+export const interceptors: HttpInterceptor[] = [];
 
-    /**
-     *
-     * @param {T} interceptor
-     */
-    public static addInterceptor<T extends { new(): HttpInterceptor }>(interceptor: T): void {
-        this.interceptors.unshift(new interceptor());
-    }
+/**
+ *
+ * @param {T} interceptor
+ */
+export function addInterceptor<T extends { new(): HttpInterceptor }>(interceptor: T): void {
+    this.interceptors.unshift(new interceptor());
+}
 
-    /**
-     *
-     * @param {string | Partial<ConfigHttp>} config
-     * @returns {(target) => void}
-     */
-    public static client(config: string | Partial<ConfigHttp>) {
-        return target => Reflect.defineMetadata(classMetadataKey, config, target);
-    }
+/**
+ *
+ * @param {string | Partial<ConfigHttp>} config
+ * @returns {(target) => void}
+ */
+export function Client(config: string | Partial<ConfigHttp>) {
+    return target => Reflect.defineMetadata(classMetadataKey, config, target);
+}
 
-    /**
-     *
-     * @param {string} url
-     * @param {Function} component
-     * @param {number} statusCodeOk
-     * @returns {Function}
-     */
-    public static get(url: string, statusCodeOk: number = 400): Function {
-        return this.request('get', url, statusCodeOk);
-    }
+/**
+ *
+ * @param {string} url
+ * @param {Function} component
+ * @param {number} statusCodeOk
+ * @returns {Function}
+ */
+export function Get(url: string, statusCodeOk: number = 400): Function {
+    return this.request('get', url, statusCodeOk);
+}
 
-    /**
-     *
-     * @param {string} url
-     * @param {Function} component
-     * @param {number} statusCodeOk
-     * @returns {Function}
-     */
-    public static post(url: string, statusCodeOk: number = 400): Function {
-        return this.request('post', url, statusCodeOk);
-    }
+/**
+ *
+ * @param {string} url
+ * @param {Function} component
+ * @param {number} statusCodeOk
+ * @returns {Function}
+ */
+export function Post(url: string, statusCodeOk: number = 400): Function {
+    return this.request('post', url, statusCodeOk);
+}
 
-    /**
-     *
-     * @param {string} url
-     * @param {Function} component
-     * @param {number} statusCodeOk
-     * @returns {Function}
-     */
-    public static put(url: string, statusCodeOk: number = 400): Function {
-        return this.request('put', url, statusCodeOk);
-    }
+/**
+ *
+ * @param {string} url
+ * @param {Function} component
+ * @param {number} statusCodeOk
+ * @returns {Function}
+ */
+export function Put(url: string, statusCodeOk: number = 400): Function {
+    return this.request('put', url, statusCodeOk);
+}
 
-    /**
-     *
-     * @param {string} url
-     * @param {Function} component
-     * @param {number} statusCodeOk
-     * @returns {Function}
-     */
-    public static patch(url: string, statusCodeOk: number = 400): Function {
-        return this.request('patch', url, statusCodeOk);
-    }
+/**
+ *
+ * @param {string} url
+ * @param {Function} component
+ * @param {number} statusCodeOk
+ * @returns {Function}
+ */
+export function Patch(url: string, statusCodeOk: number = 400): Function {
+    return this.request('patch', url, statusCodeOk);
+}
 
-    /**
-     *
-     * @param {string} url
-     * @param {Function} component
-     * @param {number} statusCodeOk
-     * @returns {Function}
-     */
-    public static delete(url: string, statusCodeOk: number = 400): Function {
-        return this.request('delete', url, statusCodeOk);
-    }
+/**
+ *
+ * @param {string} url
+ * @param {Function} component
+ * @param {number} statusCodeOk
+ * @returns {Function}
+ */
+export function Delete(url: string, statusCodeOk: number = 400): Function {
+    return this.request('delete', url, statusCodeOk);
+}
 
-    /**
-     * @param {string} method
-     * @param {string} url
-     * @param {Function} component
-     * @param {number} statusCodeOk
-     * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
-     */
-    private static request(method: string, urlToMatch: string, statusCodeOk: number) {
+/**
+ * @param {string} method
+ * @param {string} url
+ * @param {Function} component
+ * @param {number} statusCodeOk
+ * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
+ */
+function request(method: string, urlToMatch: string, statusCodeOk: number) {
 
-        return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
+    return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
-            descriptor.value = (...arguments_) => {
+        descriptor.value = (...arguments_) => {
 
-                const mainConfig = Reflect.getMetadata(classMetadataKey, target.constructor);
-                const pathParams: Param[] = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
-                const queryParams: Param[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
-                const bodyParams: number[] = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];
-                const mapper: Function = Reflect.getMetadata(mapperMetadataKey, target, propertyKey) || null;
-                const especificHeaders: Function = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || null;
-                const before: (r: Request_) => Request_ = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
-                const exceptionHandler: Handler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
-                // Reflect.deleteMetadata(pathParamMetadataKey, target, propertyKey);
+            const mainConfig = Reflect.getMetadata(classMetadataKey, target.constructor);
+            const pathParams: Param[] = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
+            const queryParams: Param[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
+            const bodyParams: number[] = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];
+            const mapper: Function = Reflect.getMetadata(mapperMetadataKey, target, propertyKey) || null;
+            const especificHeaders: Function = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || null;
+            const before: (r: Request_) => Request_ = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
+            const exceptionHandler: Handler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
+            // Reflect.deleteMetadata(pathParamMetadataKey, target, propertyKey);
 
-                const headers: Headers = new Headers();
-                let mainUrl = String();
-                const argumentsHttp = arguments_;
-                let url = String(urlToMatch);
-                url = UtilsHttp.buildPathParams(pathParams, argumentsHttp, url);
+            const headers: HeadersHttp = new HeadersHttp();
+            let mainUrl = String();
+            const argumentsHttp = arguments_;
+            let url = String(urlToMatch);
+            url = UtilsHttp.buildPathParams(pathParams, argumentsHttp, url);
 
-                const queryParamsUrl = UtilsHttp.buildQueryParams(queryParams, argumentsHttp);
+            const queryParamsUrl = UtilsHttp.buildQueryParams(queryParams, argumentsHttp);
 
-                if (typeof mainConfig === 'object') {
-                    mainUrl = mainConfig.url;
-                    UtilsHttp.prepareHeaders(mainConfig.headers, headers);
-                } else
-                    mainUrl = mainConfig;
+            if (typeof mainConfig === 'object') {
+                mainUrl = mainConfig.url;
+                UtilsHttp.prepareHeaders(mainConfig.headers, headers);
+            } else
+                mainUrl = mainConfig;
 
-                mainUrl = mainUrl.concat(url).concat(queryParamsUrl === '?' ? '' : queryParamsUrl);
+            mainUrl = mainUrl.concat(url).concat(queryParamsUrl === '?' ? '' : queryParamsUrl);
 
-                const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : String();
+            const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : String();
 
-                if (especificHeaders)
-                    Object.keys(especificHeaders)
-                        .forEach(i => headers.set(i, especificHeaders[i]));
+            if (especificHeaders)
+                Object.keys(especificHeaders)
+                    .forEach(i => headers.set(i, especificHeaders[i]));
 
-                let request: Request_ = {
-                    url: mainUrl,
-                    body: body_,
-                    headers: headers.getHeaders(),
-                    method: method,
-                };
-
-                request = before ? before(request) : request;
-                this.interceptors.forEach(i => request = i.intercep(request));
-
-                return RxHR[method](request.url, {
-                    headers: request.headers,
-                    body: request.body,
-                    qsStringifyOptions: {
-                        arrayFormat: 'repeat',
-                    },
-                })
-                    .pipe(
-                        map(value => this.mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
-                        map(body => mapper ? mapper(body) : body),
-                    );
+            let request: Request_ = {
+                url: mainUrl,
+                body: body_,
+                headers: headers.getHeaders(),
+                method: method,
             };
-        };
-    }
 
-    /**
-     *
-     * @param value
-     * @param {Handler} exceptionHandler
-     * @param statusCodeOk
-     * @returns {any}
-     */
-    private static mapBodyAndControlError(value: RxHttpRequestResponse, exceptionHandler: Handler, statusCodeOk) {
-        const {body, statusCode, request} = value.response;
-        if (statusCode < statusCodeOk) {
-            return body ? JSON.parse(body) : body;
-        } else if (exceptionHandler) {
-            throw exceptionHandler(body, statusCode, request);
+            request = before ? before(request) : request;
+            this.interceptors.forEach(i => request = i.intercep(request));
+
+            return RxHR[method](request.url, {
+                headers: request.headers,
+                body: request.body,
+                qsStringifyOptions: {
+                    arrayFormat: 'repeat',
+                },
+            })
+                .pipe(
+                    map(value => this.mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
+                    map(body => mapper ? mapper(body) : body),
+                );
+        };
+    };
+}
+
+/**
+ *
+ * @param value
+ * @param {Handler} exceptionHandler
+ * @param statusCodeOk
+ * @returns {any}
+ */
+function mapBodyAndControlError(value: RxHttpRequestResponse, exceptionHandler: Handler, statusCodeOk) {
+    const {body, statusCode, request} = value.response;
+    if (statusCode < statusCodeOk) {
+        return body ? JSON.parse(body) : body;
+    } else if (exceptionHandler) {
+        throw exceptionHandler(body, statusCode, request);
+    } else {
+        if (body && body.message && body.error) {
+            throw new HttpRequestException(body.error, statusCode, body.message);
         } else {
-            if (body && body.message && body.error) {
-                throw new HttpRequestException(body.error, statusCode, body.message);
-            } else {
-                throw new HttpRequestException(JSON.stringify(body), statusCode, String());
-            }
+            throw new HttpRequestException(JSON.stringify(body), statusCode, String());
         }
     }
-
-    /**
-     *
-     * @param {string} param
-     * @returns {Function}
-     */
-    public static pathParam(param?: string): Function {
-        return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-            const pathParams: Param[] = Reflect.getOwnMetadata(pathParamMetadataKey, target, propertyKey) || [];
-            pathParams.unshift({
-                indexArgument: parameterIndex,
-                paramValue: param,
-            });
-            Reflect.defineMetadata(pathParamMetadataKey, pathParams, target, propertyKey);
-        };
-    }
-
-    /**
-     *
-     * @param {string} param_
-     * @returns {Function}
-     */
-    public static query(param_?: string): Function {
-        return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-            const queryParams: Param[] = Reflect.getOwnMetadata(queryMetadataKey, target, propertyKey) || [];
-            queryParams.unshift({
-                indexArgument: parameterIndex,
-                paramValue: param_,
-            });
-            Reflect.defineMetadata(queryMetadataKey, queryParams, target, propertyKey);
-        };
-    }
-
-    /**
-     *
-     * @param {Object} target
-     * @param {string | symbol} propertyKey
-     * @param {number} parameterIndex
-     */
-    public static body(target: Object, propertyKey: string | symbol, parameterIndex: number) {
-        const bodyParams: number[] = Reflect.getOwnMetadata(bodyMetadataKey, target, propertyKey) || [];
-        bodyParams.unshift(parameterIndex);
-        Reflect.defineMetadata(bodyMetadataKey, bodyParams, target, propertyKey);
-    }
-
-    /**
-     *
-     * @param {boolean} enable
-     * @returns {Function}
-     */
-    public static pathParamProperty(enable = true): Function {
-        return (target, propertyName) =>
-            Reflect.defineMetadata(pathParamPropertyMetadataKey, {name: propertyName}, target, propertyName);
-    }
-
-    /**
-     *
-     * @param {Function} mapper
-     * @returns {Function}
-     */
-    public static mapper(mapper: Function): Function {
-        return (target: Object, propertyKey: string | symbol) =>
-            Reflect.defineMetadata(mapperMetadataKey, mapper, target, propertyKey);
-    }
-
-    /**
-     *
-     * @param {{[p: string]: T}} headers
-     * @returns {Function}
-     */
-    public static headers<T extends any>(headers: { [key: string]: T }): Function {
-        return (target: Object, propertyKey: string) =>
-            Reflect.defineMetadata(headersMetadataKey, headers, target, propertyKey);
-    }
-
-    /**
-     *
-     * @param {(request: Request_) => Request_} before_
-     * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
-     */
-    public static before(before_: (request: Request_) => Request_) {
-        return (target: Object, propertyKey: string) =>
-            Reflect.defineMetadata(beforeMetadataKey, before_, target, propertyKey);
-    }
-
-    /**
-     *
-     * @param {Handler} handler
-     * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
-     */
-    public static handlerError(handler: Handler) {
-        return (target: Object, propertyKey: string) =>
-            Reflect.defineMetadata(exceptionHandlerMetadataKey, handler, target, propertyKey);
-    }
 }
+
+/**
+ *
+ * @param {string} param
+ * @returns {Function}
+ */
+export function PathParam(param?: string): Function {
+    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
+        const pathParams: Param[] = Reflect.getOwnMetadata(pathParamMetadataKey, target, propertyKey) || [];
+        pathParams.unshift({
+            indexArgument: parameterIndex,
+            paramValue: param,
+        });
+        Reflect.defineMetadata(pathParamMetadataKey, pathParams, target, propertyKey);
+    };
+}
+
+/**
+ *
+ * @param {string} param_
+ * @returns {Function}
+ */
+export function Query(param_?: string): Function {
+    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
+        const queryParams: Param[] = Reflect.getOwnMetadata(queryMetadataKey, target, propertyKey) || [];
+        queryParams.unshift({
+            indexArgument: parameterIndex,
+            paramValue: param_,
+        });
+        Reflect.defineMetadata(queryMetadataKey, queryParams, target, propertyKey);
+    };
+}
+
+/**
+ *
+ * @param {Object} target
+ * @param {string | symbol} propertyKey
+ * @param {number} parameterIndex
+ */
+export function Body(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+    const bodyParams: number[] = Reflect.getOwnMetadata(bodyMetadataKey, target, propertyKey) || [];
+    bodyParams.unshift(parameterIndex);
+    Reflect.defineMetadata(bodyMetadataKey, bodyParams, target, propertyKey);
+}
+
+/**
+ *
+ * @param {boolean} enable
+ * @returns {Function}
+ */
+export function PathParamProperty(enable = true): Function {
+    return (target, propertyName) =>
+        Reflect.defineMetadata(pathParamPropertyMetadataKey, {name: propertyName}, target, propertyName);
+}
+
+/**
+ *
+ * @param {Function} mapper
+ * @returns {Function}
+ */
+export function Mapper(mapper: Function): Function {
+    return (target: Object, propertyKey: string | symbol) =>
+        Reflect.defineMetadata(mapperMetadataKey, mapper, target, propertyKey);
+}
+
+/**
+ *
+ * @param {{[p: string]: T}} headers
+ * @returns {Function}
+ */
+export function Headers<T extends any>(headers: { [key: string]: T }): Function {
+    return (target: Object, propertyKey: string) =>
+        Reflect.defineMetadata(headersMetadataKey, headers, target, propertyKey);
+}
+
+/**
+ *
+ * @param {(request: Request_) => Request_} before_
+ * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
+ */
+export function Before(before_: (request: Request_) => Request_) {
+    return (target: Object, propertyKey: string) =>
+        Reflect.defineMetadata(beforeMetadataKey, before_, target, propertyKey);
+}
+
+/**
+ *
+ * @param {Handler} handler
+ * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
+ */
+export function HandlerError(handler: Handler) {
+    return (target: Object, propertyKey: string) =>
+        Reflect.defineMetadata(exceptionHandlerMetadataKey, handler, target, propertyKey);
+}
+
 
 /**
  *
@@ -309,7 +308,7 @@ class UtilsHttp {
      * @param obj
      * @param {Headers} headers
      */
-    public static prepareHeaders(obj = {}, headers: Headers): void {
+    public static prepareHeaders(obj = {}, headers: HeadersHttp): void {
         Object.keys(obj).forEach(key =>
             !headers.has(obj[key]) ? headers.set(key, obj[key]) : null,
         );
@@ -426,7 +425,7 @@ export class HttpRequestException {
  *
  */
 
-class Headers {
+class HeadersHttp {
 
     /**
      *
@@ -503,6 +502,6 @@ interface ConfigHttp {
 export interface Request_ {
     readonly method: string,
     body: any,
-    readonly headers: Headers,
+    readonly headers: HeadersHttp,
     readonly url: string
 }

@@ -1,5 +1,6 @@
 "use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-var rxfeign_1 = require("./rxfeign");
-exports.Http = rxfeign_1.Http;
-exports.HttpRequestException = rxfeign_1.HttpRequestException;
+__export(require("./rxfeign"));
