@@ -47,7 +47,7 @@ exports.Client = Client;
  * @returns {Function}
  */
 function Get(url, statusCodeOk = 400) {
-    return this.request('get', url, statusCodeOk);
+    return request('get', url, statusCodeOk);
 }
 exports.Get = Get;
 /**
@@ -58,7 +58,7 @@ exports.Get = Get;
  * @returns {Function}
  */
 function Post(url, statusCodeOk = 400) {
-    return this.request('post', url, statusCodeOk);
+    return request('post', url, statusCodeOk);
 }
 exports.Post = Post;
 /**
@@ -69,7 +69,7 @@ exports.Post = Post;
  * @returns {Function}
  */
 function Put(url, statusCodeOk = 400) {
-    return this.request('put', url, statusCodeOk);
+    return request('put', url, statusCodeOk);
 }
 exports.Put = Put;
 /**
@@ -80,7 +80,7 @@ exports.Put = Put;
  * @returns {Function}
  */
 function Patch(url, statusCodeOk = 400) {
-    return this.request('patch', url, statusCodeOk);
+    return request('patch', url, statusCodeOk);
 }
 exports.Patch = Patch;
 /**
@@ -91,7 +91,7 @@ exports.Patch = Patch;
  * @returns {Function}
  */
 function Delete(url, statusCodeOk = 400) {
-    return this.request('delete', url, statusCodeOk);
+    return request('delete', url, statusCodeOk);
 }
 exports.Delete = Delete;
 /**

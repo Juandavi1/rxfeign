@@ -64,7 +64,7 @@ export function Client(config: string | Partial<ConfigHttp>) {
  * @returns {Function}
  */
 export function Get(url: string, statusCodeOk: number = 400): Function {
-    return this.request('get', url, statusCodeOk);
+    return request('get', url, statusCodeOk);
 }
 
 /**
@@ -75,7 +75,7 @@ export function Get(url: string, statusCodeOk: number = 400): Function {
  * @returns {Function}
  */
 export function Post(url: string, statusCodeOk: number = 400): Function {
-    return this.request('post', url, statusCodeOk);
+    return request('post', url, statusCodeOk);
 }
 
 /**
@@ -86,7 +86,7 @@ export function Post(url: string, statusCodeOk: number = 400): Function {
  * @returns {Function}
  */
 export function Put(url: string, statusCodeOk: number = 400): Function {
-    return this.request('put', url, statusCodeOk);
+    return request('put', url, statusCodeOk);
 }
 
 /**
@@ -97,7 +97,7 @@ export function Put(url: string, statusCodeOk: number = 400): Function {
  * @returns {Function}
  */
 export function Patch(url: string, statusCodeOk: number = 400): Function {
-    return this.request('patch', url, statusCodeOk);
+    return request('patch', url, statusCodeOk);
 }
 
 /**
@@ -108,7 +108,7 @@ export function Patch(url: string, statusCodeOk: number = 400): Function {
  * @returns {Function}
  */
 export function Delete(url: string, statusCodeOk: number = 400): Function {
-    return this.request('delete', url, statusCodeOk);
+    return request('delete', url, statusCodeOk);
 }
 
 /**
