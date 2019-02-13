@@ -27,7 +27,7 @@ exports.interceptors = [];
  * @param {T} interceptor
  */
 function addInterceptor(interceptor) {
-    this.interceptors.unshift(new interceptor());
+    exports.interceptors.unshift(new interceptor());
 }
 exports.addInterceptor = addInterceptor;
 /**
@@ -137,7 +137,7 @@ function request(method, urlToMatch, statusCodeOk) {
                 method: method,
             };
             request = before ? before(request) : request;
-            this.interceptors.forEach(i => request = i.intercep(request));
+            exports.interceptors.forEach(i => request = i.intercep(request));
             return rx_http_request_1.RxHR[method](request.url, {
                 headers: request.headers,
                 body: request.body,
@@ -145,7 +145,7 @@ function request(method, urlToMatch, statusCodeOk) {
                     arrayFormat: 'repeat',
                 },
             })
-                .pipe(operators_1.map(value => this.mapBodyAndControlError(value, exceptionHandler, statusCodeOk)), operators_1.map(body => mapper ? mapper(body) : body));
+                .pipe(operators_1.map(value => mapBodyAndControlError(value, exceptionHandler, statusCodeOk)), operators_1.map(body => mapper ? mapper(body) : body));
         };
     };
 }

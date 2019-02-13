@@ -2,7 +2,6 @@
  * @author Juan David Correa
  */
 
-
 import {RxHR, RxHttpRequestResponse} from '@akanass/rx-http-request';
 import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
@@ -44,7 +43,7 @@ export const interceptors: HttpInterceptor[] = [];
  * @param {T} interceptor
  */
 export function addInterceptor<T extends { new(): HttpInterceptor }>(interceptor: T): void {
-    this.interceptors.unshift(new interceptor());
+    interceptors.unshift(new interceptor());
 }
 
 /**
@@ -164,7 +163,7 @@ function request(method: string, urlToMatch: string, statusCodeOk: number) {
             };
 
             request = before ? before(request) : request;
-            this.interceptors.forEach(i => request = i.intercep(request));
+            interceptors.forEach(i => request = i.intercep(request));
 
             return RxHR[method](request.url, {
                 headers: request.headers,
@@ -174,7 +173,7 @@ function request(method: string, urlToMatch: string, statusCodeOk: number) {
                 },
             })
                 .pipe(
-                    map(value => this.mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
+                    map(value => mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
                     map(body => mapper ? mapper(body) : body),
                 );
         };
