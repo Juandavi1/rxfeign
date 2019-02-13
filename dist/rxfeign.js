@@ -44,8 +44,8 @@ class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static get(url, component, statusCodeOk = 400) {
-        return this.request('get', url, component, statusCodeOk);
+    static get(url, statusCodeOk = 400) {
+        return this.request('get', url, statusCodeOk);
     }
     /**
      *
@@ -54,8 +54,8 @@ class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static post(url, component, statusCodeOk = 400) {
-        return this.request('post', url, component, statusCodeOk);
+    static post(url, statusCodeOk = 400) {
+        return this.request('post', url, statusCodeOk);
     }
     /**
      *
@@ -64,8 +64,8 @@ class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static put(url, component, statusCodeOk = 400) {
-        return this.request('put', url, component, statusCodeOk);
+    static put(url, statusCodeOk = 400) {
+        return this.request('put', url, statusCodeOk);
     }
     /**
      *
@@ -74,8 +74,8 @@ class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static patch(url, component, statusCodeOk = 400) {
-        return this.request('patch', url, component, statusCodeOk);
+    static patch(url, statusCodeOk = 400) {
+        return this.request('patch', url, statusCodeOk);
     }
     /**
      *
@@ -84,8 +84,8 @@ class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static delete(url, component, statusCodeOk = 400) {
-        return this.request('delete', url, component, statusCodeOk);
+    static delete(url, statusCodeOk = 400) {
+        return this.request('delete', url, statusCodeOk);
     }
     /**
      * @param {string} method
@@ -94,10 +94,10 @@ class Http {
      * @param {number} statusCodeOk
      * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
      */
-    static request(method, urlToMatch, component, statusCodeOk) {
+    static request(method, urlToMatch, statusCodeOk) {
         return (target, propertyKey, descriptor) => {
             descriptor.value = (...arguments_) => {
-                const mainConfig = Reflect.getMetadata(classMetadataKey, component);
+                const mainConfig = Reflect.getMetadata(classMetadataKey, target.constructor);
                 const pathParams = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
                 const queryParams = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
                 const bodyParams = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];

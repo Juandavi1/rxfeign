@@ -38,7 +38,7 @@ export declare class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static get(url: string, component: Function, statusCodeOk?: number): Function;
+    static get(url: string, statusCodeOk?: number): Function;
     /**
      *
      * @param {string} url
@@ -46,7 +46,7 @@ export declare class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static post(url: string, component: Function, statusCodeOk?: number): Function;
+    static post(url: string, statusCodeOk?: number): Function;
     /**
      *
      * @param {string} url
@@ -54,7 +54,7 @@ export declare class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static put(url: string, component: Function, statusCodeOk?: number): Function;
+    static put(url: string, statusCodeOk?: number): Function;
     /**
      *
      * @param {string} url
@@ -62,7 +62,7 @@ export declare class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static patch(url: string, component: Function, statusCodeOk?: number): Function;
+    static patch(url: string, statusCodeOk?: number): Function;
     /**
      *
      * @param {string} url
@@ -70,7 +70,7 @@ export declare class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    static delete(url: string, component: Function, statusCodeOk?: number): Function;
+    static delete(url: string, statusCodeOk?: number): Function;
     /**
      * @param {string} method
      * @param {string} url

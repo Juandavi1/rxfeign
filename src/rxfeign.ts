@@ -64,8 +64,8 @@ export class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    public static get(url: string, component: Function, statusCodeOk: number = 400): Function {
-        return this.request('get', url, component, statusCodeOk);
+    public static get(url: string, statusCodeOk: number = 400): Function {
+        return this.request('get', url, statusCodeOk);
     }
 
     /**
@@ -75,8 +75,8 @@ export class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    public static post(url: string, component: Function, statusCodeOk: number = 400): Function {
-        return this.request('post', url, component, statusCodeOk);
+    public static post(url: string, statusCodeOk: number = 400): Function {
+        return this.request('post', url, statusCodeOk);
     }
 
     /**
@@ -86,8 +86,8 @@ export class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    public static put(url: string, component: Function, statusCodeOk: number = 400): Function {
-        return this.request('put', url, component, statusCodeOk);
+    public static put(url: string, statusCodeOk: number = 400): Function {
+        return this.request('put', url, statusCodeOk);
     }
 
     /**
@@ -97,8 +97,8 @@ export class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    public static patch(url: string, component: Function, statusCodeOk: number = 400): Function {
-        return this.request('patch', url, component, statusCodeOk);
+    public static patch(url: string, statusCodeOk: number = 400): Function {
+        return this.request('patch', url, statusCodeOk);
     }
 
     /**
@@ -108,8 +108,8 @@ export class Http {
      * @param {number} statusCodeOk
      * @returns {Function}
      */
-    public static delete(url: string, component: Function, statusCodeOk: number = 400): Function {
-        return this.request('delete', url, component, statusCodeOk);
+    public static delete(url: string, statusCodeOk: number = 400): Function {
+        return this.request('delete', url, statusCodeOk);
     }
 
     /**
@@ -119,13 +119,13 @@ export class Http {
      * @param {number} statusCodeOk
      * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
      */
-    private static request(method: string, urlToMatch: string, component: Function, statusCodeOk: number) {
+    private static request(method: string, urlToMatch: string, statusCodeOk: number) {
 
         return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
             descriptor.value = (...arguments_) => {
 
-                const mainConfig = Reflect.getMetadata(classMetadataKey, component);
+                const mainConfig = Reflect.getMetadata(classMetadataKey, target.constructor);
                 const pathParams: Param[] = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
                 const queryParams: Param[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
                 const bodyParams: number[] = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];
@@ -173,7 +173,6 @@ export class Http {
                     qsStringifyOptions: {
                         arrayFormat: 'repeat',
                     },
-
                 })
                     .pipe(
                         map(value => this.mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
