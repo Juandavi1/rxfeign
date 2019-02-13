@@ -13,7 +13,7 @@ or
 $ npm install --save @akanass/rx-http-request rxjs rxfeign
 ```
 ```typescript
-import { Http, HttpObservable } from 'rxfeign';
+import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```
 #### Anotaciones
    - *@Client*
@@ -24,7 +24,7 @@ import { Http, HttpObservable } from 'rxfeign';
             Si no se define el header __Content-Type__ por defecto es __application/json__.
    
 ```typescript
-@Http.client({
+@Client({
  url: 'https://jsonplaceholder.typicode.com/posts/',
  headers:{}  // opcional
 })
@@ -32,7 +32,7 @@ export class Post{}
 
 o
 
-@Http.client('https://jsonplaceholder.typicode.com/posts/')
+@Client('https://jsonplaceholder.typicode.com/posts/')
 export class Post{}
 ```
    
@@ -41,14 +41,14 @@ export class Post{}
     la clase en la que se encuentra.
    
 ```typescript
-    @Http.client('https://jsonplaceholder.typicode.com/posts/')
+    @Client('https://jsonplaceholder.typicode.com/posts/')
     export class Post {
     
       constructor(){}
     
-      @Http.get('{id}', Post)
+      @Get('{id}')
       public findById(
-        @Http.pathParam('id') id: number,
+        @PathParam('id') id: number,
       ): HttpObservable<PostModel> {}
     }
 ```
@@ -61,10 +61,10 @@ export class Post{}
    __/1?attr=holaa__
    
 ```typescript
-@Http.get('{id}', Post)
+@Get('{id}')
 public findById(
-    @Http.pathParam('id') id: number, // 1
-    @Http.query('attr') value: number|string // holaa
+    @PathParam('id') id: number, // 1
+    @Query('attr') value: number|string // holaa
 ): HttpObservable<PostModel> {}
 ```
    si el parametro que se pasa es un objeto, se mapeara cada atributo valor en la url 
@@ -81,10 +81,10 @@ class PostModel{
     ){}
 }
 
-@Http.get('{id}', Post)
+@Get('{id}')
 public findById(
-    @Http.pathParam('id') id: number, // 1
-    @Http.query('attr') value: number|string // holaa
-    @Http.query() value: PostModel // new PostModel('lord',99)
+    @PathParam('id') id: number, // 1
+    @Query('attr') value: number|string // holaa
+    @Query() value: PostModel // new PostModel('lord',99)
 ): HttpObservable<PostModel> {}
 ```
