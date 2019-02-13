@@ -403,7 +403,9 @@ class UtilsHttp {
      */
     public static prepareBody(params: number[], argumentsHttp) {
         let body = {};
-        params.forEach(i => body = Object.assign({}, body, argumentsHttp[i]));
+        params
+            .filter(i => typeof argumentsHttp[i] === 'object' && argumentsHttp[i])
+            .forEach(i => body = Object.assign({}, body, argumentsHttp[i]));
         return params.length ? JSON.stringify(body) as any : String();
     }
 }
