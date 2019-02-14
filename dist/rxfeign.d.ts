@@ -12,7 +12,7 @@ export interface HttpInterceptor {
 /**
  *
  */
-export declare type Handler = (...request: any[]) => HttpRequestException;
+export declare type Handler = <U extends HttpRequestException>(...request: any[]) => U;
 /**
  *
  */
@@ -21,9 +21,9 @@ export declare const interceptors: HttpInterceptor[];
  *
  * @param {T} interceptor
  */
-export declare function addInterceptor<T extends {
+export declare function addInterceptors<T extends {
     new (): HttpInterceptor;
-}>(interceptor: T): void;
+}>(...interceptor: T[]): void;
 /**
  *
  * @param {string | Partial<ConfigHttp>} config
@@ -37,7 +37,7 @@ export declare function Client(config: string | Partial<ConfigHttp>): (target: a
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export declare function Get(url: string, statusCodeOk?: number): Function;
+export declare function Get(url?: string, statusCodeOk?: number): Function;
 /**
  *
  * @param {string} url
@@ -45,7 +45,7 @@ export declare function Get(url: string, statusCodeOk?: number): Function;
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export declare function Post(url: string, statusCodeOk?: number): Function;
+export declare function Post(url?: string, statusCodeOk?: number): Function;
 /**
  *
  * @param {string} url
@@ -53,7 +53,7 @@ export declare function Post(url: string, statusCodeOk?: number): Function;
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export declare function Put(url: string, statusCodeOk?: number): Function;
+export declare function Put(url?: string, statusCodeOk?: number): Function;
 /**
  *
  * @param {string} url
@@ -61,7 +61,7 @@ export declare function Put(url: string, statusCodeOk?: number): Function;
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export declare function Patch(url: string, statusCodeOk?: number): Function;
+export declare function Patch(url?: string, statusCodeOk?: number): Function;
 /**
  *
  * @param {string} url
@@ -69,7 +69,7 @@ export declare function Patch(url: string, statusCodeOk?: number): Function;
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export declare function Delete(url: string, statusCodeOk?: number): Function;
+export declare function Delete(url?: string, statusCodeOk?: number): Function;
 /**
  *
  * @param {string} param

@@ -30,7 +30,7 @@ export interface HttpInterceptor {
 /**
  *
  */
-export type Handler = (...request) => HttpRequestException
+export type Handler = <U extends HttpRequestException>(...request) => U
 
 /**
  *
@@ -42,8 +42,8 @@ export const interceptors: HttpInterceptor[] = [];
  *
  * @param {T} interceptor
  */
-export function addInterceptor<T extends { new(): HttpInterceptor }>(interceptor: T): void {
-    interceptors.unshift(new interceptor());
+export function addInterceptors<T extends { new(): HttpInterceptor }>(...interceptor: T[]): void {
+    interceptor.forEach(i => interceptors.unshift(new i()))
 }
 
 /**
@@ -62,7 +62,7 @@ export function Client(config: string | Partial<ConfigHttp>) {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Get(url: string, statusCodeOk: number = 400): Function {
+export function Get(url?: string, statusCodeOk: number = 400): Function {
     return request('get', url, statusCodeOk);
 }
 
@@ -73,7 +73,7 @@ export function Get(url: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Post(url: string, statusCodeOk: number = 400): Function {
+export function Post(url?: string, statusCodeOk: number = 400): Function {
     return request('post', url, statusCodeOk);
 }
 
@@ -84,7 +84,7 @@ export function Post(url: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Put(url: string, statusCodeOk: number = 400): Function {
+export function Put(url?: string, statusCodeOk: number = 400): Function {
     return request('put', url, statusCodeOk);
 }
 
@@ -95,7 +95,7 @@ export function Put(url: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Patch(url: string, statusCodeOk: number = 400): Function {
+export function Patch(url?: string, statusCodeOk: number = 400): Function {
     return request('patch', url, statusCodeOk);
 }
 
@@ -106,7 +106,7 @@ export function Patch(url: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Delete(url: string, statusCodeOk: number = 400): Function {
+export function Delete(url?: string, statusCodeOk: number = 400): Function {
     return request('delete', url, statusCodeOk);
 }
 
@@ -117,7 +117,7 @@ export function Delete(url: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
  */
-function request(method: string, urlToMatch: string, statusCodeOk: number) {
+function request(method: string, urlToMatch: string = '', statusCodeOk: number) {
 
     return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
@@ -401,7 +401,7 @@ class UtilsHttp {
      * @param argumentsHttp
      * @returns {any}
      */
-    public static prepareBody(params: number[], argumentsHttp) {
+    public static prepareBody(params: number[] = [], argumentsHttp = []) {
         let body = {};
         params
             .filter(i => typeof argumentsHttp[i] === 'object' && argumentsHttp[i])
