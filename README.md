@@ -210,7 +210,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
     export class Class {
         
         public static error<MyClass extends HttpRequestException>(error: AxiosError): MyClase {
-            if(statusCode === 404){
+            if(error.response.status === 404){
                 return new NotFoundHttp(...)
             }else{
                 return new MyClass(...)
