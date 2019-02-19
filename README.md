@@ -1,4 +1,4 @@
-### RxFeign (Request en Cliente y Servidor)
+### RxFeign (NodeJs)
 #### IMPORTANTE
 Este primer release solo tiene unas cuantas funcionalidades basicas,
 si necesitas hacer request con mucha mas configuracion mejor busca otra libreria. 
