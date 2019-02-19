@@ -2,11 +2,11 @@
  * @author Juan David Correa
  */
 
-import {map} from 'rxjs/operators';
+import {catchError, map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
-import axios, {AxiosResponse} from 'axios'
-import {from} from "rxjs";
+import axios, {AxiosError} from 'axios'
+import {from, of} from "rxjs";
 
 /**
  *
@@ -31,7 +31,7 @@ export interface HttpInterceptor {
 /**
  *
  */
-export type Handler = <U extends HttpRequestException>(...request) => U
+export type Handler = <U extends HttpRequestException>(error: AxiosError) => U
 
 /**
  *
@@ -124,7 +124,7 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
 
         descriptor.value = (...arguments_) => {
 
-            const mainConfig = Reflect.getMetadata(classMetadataKey, target.constructor);
+            const mainConfig: ConfigHttp = Reflect.getMetadata(classMetadataKey, target.constructor);
             const pathParams: Param[] = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
             const queryParams: Param[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
             const bodyParams: number[] = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];
@@ -133,6 +133,10 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
             const before: (r: Request_) => Request_ = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
             const exceptionHandler: Handler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
             // Reflect.deleteMetadata(pathParamMetadataKey, target, propertyKey);
+
+
+            if (urlToMatch.charAt(0) == '/')
+                urlToMatch = urlToMatch.substr(1, urlToMatch.length)
 
             const headers: HeadersHttp = new HeadersHttp();
             let mainUrl = String();
@@ -148,9 +152,12 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
             } else
                 mainUrl = mainConfig;
 
+            if (mainUrl.charAt(mainUrl.length - 1) !== '/')
+                mainUrl = mainUrl.concat('/')
+            
             mainUrl = mainUrl.concat(url).concat(queryParamsUrl === '?' ? '' : queryParamsUrl);
 
-            const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : String();
+            const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : {};
 
             if (especificHeaders)
                 Object.keys(especificHeaders)
@@ -165,16 +172,19 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
 
             request = before ? before(request) : request;
             interceptors.forEach(i => request = i.intercep(request));
-            
-            return from(axios[method](request.url, {
+
+            return from(axios.request({
+                method: request.method,
+                data: request.body,
                 headers: request.headers,
-                body: request.body,
+                url: request.url,
+                responseType: "json"
             }))
                 .pipe(
-                    map((value: AxiosResponse) => 
-                        mapBodyAndControlError(value, exceptionHandler, statusCodeOk)
+                    catchError(({Error}) =>
+                        mapBodyAndControlError(Error as AxiosError, exceptionHandler, statusCodeOk)
                     ),
-                    map(body => mapper ? mapper(body) : body),
+                    map(({data}) => mapper ? mapper(data) : data),
                 );
         };
     };
@@ -187,19 +197,19 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
  * @param statusCodeOk
  * @returns {any}
  */
-function mapBodyAndControlError(value: AxiosResponse, exceptionHandler: Handler, statusCodeOk) {
-    const {data, status, request} = value;
-    if (status < statusCodeOk) {
-        return data ? JSON.parse(data) : data;
-    } else if (exceptionHandler) {
-        throw exceptionHandler(data, status, request);
+function mapBodyAndControlError(error: AxiosError, exceptionHandler: Handler, statusCodeOk) {
+    const {config} = error
+    const {data} = config
+    if (exceptionHandler) {
+        throw exceptionHandler(error);
     } else {
         if (data && data.message && data.error) {
-            throw new HttpRequestException(data.error, status, data.message);
+            throw new HttpRequestException(data.error, error.response.status, data.message);
         } else {
-            throw new HttpRequestException(JSON.stringify(data), status, String());
+            throw new HttpRequestException(JSON.stringify(data), error.response.status, String());
         }
     }
+    return of(config)
 }
 
 /**
@@ -401,12 +411,12 @@ class UtilsHttp {
      * @param argumentsHttp
      * @returns {any}
      */
-    public static prepareBody(params: number[] = [], argumentsHttp = []) {
+    public static prepareBody(params: number[] = [], argumentsHttp = []): any {
         let body = {};
         params
             .filter(i => typeof argumentsHttp[i] === 'object' && argumentsHttp[i])
             .forEach(i => body = Object.assign({}, body, argumentsHttp[i]));
-        return params.length ? JSON.stringify(body) as any : String();
+        return body
     }
 }
 

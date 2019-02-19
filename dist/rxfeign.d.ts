@@ -3,6 +3,7 @@
  */
 import { Observable } from 'rxjs/internal/Observable';
 import 'reflect-metadata';
+import { AxiosError } from 'axios';
 /**
  *
  */
@@ -12,7 +13,7 @@ export interface HttpInterceptor {
 /**
  *
  */
-export declare type Handler = <U extends HttpRequestException>(...request: any[]) => U;
+export declare type Handler = <U extends HttpRequestException>(error: AxiosError) => U;
 /**
  *
  */

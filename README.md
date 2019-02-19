@@ -1,4 +1,4 @@
-### RxFeign (NodeJs)
+### RxFeign (Request en Sevidor y Cliente)
 #### IMPORTANTE
 Este primer release solo tiene unas cuantas funcionalidades basicas,
 si necesitas hacer request con mucha mas configuracion mejor busca otra libreria. 
@@ -6,11 +6,11 @@ si necesitas hacer request con mucha mas configuracion mejor busca otra libreria
 realizar peticiones por medio de anotaciones
 #### Instalacion 
 ```sh
-$ yarn add @akanass/rx-http-request rxjs rxfeign
+$ yarn add axios rxjs rxfeign
 
 or
 
-$ npm install --save @akanass/rx-http-request rxjs rxfeign
+$ npm install --save axios rxjs rxfeign
 ```
 
 ```typescript
@@ -189,7 +189,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```
 
    - *@HandlerError*  
-   Este metodo recibe por parametro body, statusCode, request y debe retornar la instancia que sera lanzada como excepcion.
+   Este metodo que se pasa por parametro recibe una instancia de tipo *__AxiosError__* y debe retornar la instancia que sera lanzada como excepcion.
    se espera que el usuario tenga establecido un manejador de excepciones global.
    se puede lanzar una excepcion custom heredando de __HttpRequestException__
    si no se define esta anotacion y hay un error entonces se lanzara una excepcion de tipo __HttpRequestException__
@@ -209,7 +209,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```typescript
     export class Class {
         
-        public static error<MyClass extends HttpRequestException>(body, statusCode, request): MyClase {
+        public static error<MyClass extends HttpRequestException>(error: AxiosError): MyClase {
             if(statusCode === 404){
                 return new NotFoundHttp(...)
             }else{
