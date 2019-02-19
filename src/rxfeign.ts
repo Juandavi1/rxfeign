@@ -23,12 +23,12 @@ const exceptionHandlerMetadataKey = Symbol('__handlerError__');
 const configMetadataKey = Symbol('__config__');
 
 /**
- * 
+ *
  */
 
-type RemoveAttr<T> = Pick<T, Exclude<keyof T, 'url'|'data'|'params'|'headers'|'baseURL'|'method'>>
+type RemoveAttr<T> = Pick<T, Exclude<keyof T, 'url' | 'data' | 'params' | 'headers' | 'baseURL' | 'method'>>
 
-export type FeignConfig = Partial<RemoveAttr<AxiosRequestConfig>>  
+export type FeignConfig = Partial<RemoveAttr<AxiosRequestConfig>>
 
 /**
  *
@@ -205,10 +205,11 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
  */
 function mapError(error: AxiosError, exceptionHandler: Handler, statusCodeOk): Observable<never> {
     const {config} = error
+    const {response} = error
     const {data} = config
     const objError = exceptionHandler ? exceptionHandler(error) : (data && data.message && data.error) ?
-        new HttpRequestException(data.error, error.response.status, data.message) :
-        new HttpRequestException(JSON.stringify(data), error.response.status, String());
+        new HttpRequestException(data.error, response ? response.status : 504, data.message) :
+        new HttpRequestException(JSON.stringify(data), response ? response.status : 504, String());
     return throwError(objError)
 }
 
@@ -228,7 +229,7 @@ export const PathParam = (param?: string) =>
     };
 
 /**
- * 
+ *
  * @param {FeignConfig} config
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
@@ -305,7 +306,7 @@ export const Before = (before_: (request: Request_) => Request_) =>
 
 
 /**
- * 
+ *
  * @param {Handler} handler
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
@@ -517,7 +518,7 @@ interface ConfigHttp {
 }
 
 /**
- * 
+ *
  */
 export interface Request_ {
     readonly method: string,

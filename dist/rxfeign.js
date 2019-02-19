@@ -141,10 +141,11 @@ function request(method, urlToMatch = '', statusCodeOk) {
  */
 function mapError(error, exceptionHandler, statusCodeOk) {
     const { config } = error;
+    const { response } = error;
     const { data } = config;
     const objError = exceptionHandler ? exceptionHandler(error) : (data && data.message && data.error) ?
-        new HttpRequestException(data.error, error.response.status, data.message) :
-        new HttpRequestException(JSON.stringify(data), error.response.status, String());
+        new HttpRequestException(data.error, response ? response.status : 504, data.message) :
+        new HttpRequestException(JSON.stringify(data), response ? response.status : 504, String());
     return rxjs_1.throwError(objError);
 }
 /**
