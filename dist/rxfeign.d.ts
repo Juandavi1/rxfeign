@@ -88,7 +88,7 @@ export declare const PathParam: (param?: string) => (target: Object, propertyKey
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
  */
-export declare const Config: (config: Partial<Pick<AxiosRequestConfig, "transformRequest" | "transformResponse" | "paramsSerializer" | "timeout" | "withCredentials" | "adapter" | "auth" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "onUploadProgress" | "onDownloadProgress" | "maxContentLength" | "validateStatus" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy" | "cancelToken">>) => (target: Object, propertyKey: string | symbol) => void;
+export declare const Config: (config: Partial<Pick<AxiosRequestConfig, "auth" | "timeout" | "transformRequest" | "transformResponse" | "paramsSerializer" | "withCredentials" | "adapter" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "onUploadProgress" | "onDownloadProgress" | "maxContentLength" | "validateStatus" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy" | "cancelToken">>) => (target: Object, propertyKey: string | symbol) => void;
 /**
  *
  * @param {string} param_

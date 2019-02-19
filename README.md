@@ -24,11 +24,17 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
         * objecto : este objeto por el momento solo tiene dos atributos, la url base y los headers 
             globales para todos los request que se hacen dentro de esa clase.  
             Si no se define el header __Content-Type__ por defecto es __application/json__.
+        * config: en este objeto se puede definir toda la configuracion que se puede establecer en 
+            el objeto de configuracion definido por axios (AxiosRequestConfig). para mayor informacion 
+            visitar https://github.com/axios/axios
    
 ```typescript
     @Client({
      url: 'https://jsonplaceholder.typicode.com/posts/',
-     headers:{}  // opcional
+     headers:{},  // opcional,
+     config:{
+         timeout:99
+     } // opcional
     })
     export class Post{}
     
@@ -36,6 +42,29 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
     
     @Client('https://jsonplaceholder.typicode.com/posts/')
     export class Post{}
+```
+   - *@Config*  
+   esta anotacion recibe por parametro el mismo objeto que se define en *config* de la anotacion *@Client*
+   pero esta configuracion solo aplicara para el metodo anotado, si hay atributos igual en el config de *@Client* entonces seran sobrescritos. En el siguiente ejemplo, el timeout del request sera *1*.
+   
+```typescript
+    @Client({
+     url: 'https://jsonplaceholder.typicode.com/posts/',
+     config:{ // config axios
+         timeout:99 // sobrescrito
+     }
+    })
+    export class Post{
+        
+        @Get()
+        @Config({
+            timeout: 1
+        })
+        public findById(
+            @PathParam() id: number
+        ): HttpObservable<any>
+    
+    }
 ```
    
    - *@Get/@Post/@Put/@Patch/@Delete*   
