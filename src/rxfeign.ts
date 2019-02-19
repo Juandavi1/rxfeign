@@ -6,7 +6,7 @@ import {catchError, map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
 import axios, {AxiosError} from 'axios'
-import {from, of} from "rxjs";
+import {from, throwError} from "rxjs";
 
 /**
  *
@@ -52,9 +52,8 @@ export function addInterceptors<T extends { new(): HttpInterceptor }>(...interce
  * @param {string | Partial<ConfigHttp>} config
  * @returns {(target) => void}
  */
-export function Client(config: string | Partial<ConfigHttp>) {
-    return target => Reflect.defineMetadata(classMetadataKey, config, target);
-}
+export const Client = (config: string | Partial<ConfigHttp>) =>
+    target => Reflect.defineMetadata(classMetadataKey, config, target)
 
 /**
  *
@@ -63,9 +62,8 @@ export function Client(config: string | Partial<ConfigHttp>) {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Get(url?: string, statusCodeOk: number = 400): Function {
-    return request('get', url, statusCodeOk);
-}
+export const Get = (url?: string, statusCodeOk: number = 400) => request('get', url, statusCodeOk)
+
 
 /**
  *
@@ -74,9 +72,8 @@ export function Get(url?: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Post(url?: string, statusCodeOk: number = 400): Function {
-    return request('post', url, statusCodeOk);
-}
+export const Post = (url?: string, statusCodeOk: number = 400) => request('post', url, statusCodeOk);
+
 
 /**
  *
@@ -85,9 +82,8 @@ export function Post(url?: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Put(url?: string, statusCodeOk: number = 400): Function {
-    return request('put', url, statusCodeOk);
-}
+export const Put = (url?: string, statusCodeOk: number = 400) => request('put', url, statusCodeOk);
+
 
 /**
  *
@@ -96,9 +92,8 @@ export function Put(url?: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Patch(url?: string, statusCodeOk: number = 400): Function {
-    return request('patch', url, statusCodeOk);
-}
+export const Patch = (url?: string, statusCodeOk: number = 400) => request('patch', url, statusCodeOk);
+
 
 /**
  *
@@ -107,9 +102,7 @@ export function Patch(url?: string, statusCodeOk: number = 400): Function {
  * @param {number} statusCodeOk
  * @returns {Function}
  */
-export function Delete(url?: string, statusCodeOk: number = 400): Function {
-    return request('delete', url, statusCodeOk);
-}
+export const Delete = (url?: string, statusCodeOk: number = 400) => request('delete', url, statusCodeOk);
 
 /**
  * @param {string} method
@@ -154,7 +147,7 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
 
             if (mainUrl.charAt(mainUrl.length - 1) !== '/')
                 mainUrl = mainUrl.concat('/')
-            
+
             mainUrl = mainUrl.concat(url).concat(queryParamsUrl === '?' ? '' : queryParamsUrl);
 
             const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : {};
@@ -181,10 +174,10 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
                 responseType: "json"
             }))
                 .pipe(
-                    catchError(({Error}) =>
-                        mapBodyAndControlError(Error as AxiosError, exceptionHandler, statusCodeOk)
-                    ),
                     map(({data}) => mapper ? mapper(data) : data),
+                    catchError((Error) =>
+                        mapError(Error, exceptionHandler, statusCodeOk)
+                    ),
                 );
         };
     };
@@ -197,19 +190,13 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
  * @param statusCodeOk
  * @returns {any}
  */
-function mapBodyAndControlError(error: AxiosError, exceptionHandler: Handler, statusCodeOk) {
+function mapError(error: AxiosError, exceptionHandler: Handler, statusCodeOk): Observable<never> {
     const {config} = error
     const {data} = config
-    if (exceptionHandler) {
-        throw exceptionHandler(error);
-    } else {
-        if (data && data.message && data.error) {
-            throw new HttpRequestException(data.error, error.response.status, data.message);
-        } else {
-            throw new HttpRequestException(JSON.stringify(data), error.response.status, String());
-        }
-    }
-    return of(config)
+    const objError = exceptionHandler ? exceptionHandler(error) : (data && data.message && data.error) ?
+        new HttpRequestException(data.error, error.response.status, data.message) :
+        new HttpRequestException(JSON.stringify(data), error.response.status, String());
+    return throwError(objError)
 }
 
 /**
@@ -217,8 +204,8 @@ function mapBodyAndControlError(error: AxiosError, exceptionHandler: Handler, st
  * @param {string} param
  * @returns {Function}
  */
-export function PathParam(param?: string): Function {
-    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
+export const PathParam = (param?: string) =>
+    (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         const pathParams: Param[] = Reflect.getOwnMetadata(pathParamMetadataKey, target, propertyKey) || [];
         pathParams.unshift({
             indexArgument: parameterIndex,
@@ -226,15 +213,14 @@ export function PathParam(param?: string): Function {
         });
         Reflect.defineMetadata(pathParamMetadataKey, pathParams, target, propertyKey);
     };
-}
 
 /**
  *
  * @param {string} param_
  * @returns {Function}
  */
-export function Query(param_?: string): Function {
-    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
+export const Query = (param_?: string) =>
+    (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         const queryParams: Param[] = Reflect.getOwnMetadata(queryMetadataKey, target, propertyKey) || [];
         queryParams.unshift({
             indexArgument: parameterIndex,
@@ -242,7 +228,6 @@ export function Query(param_?: string): Function {
         });
         Reflect.defineMetadata(queryMetadataKey, queryParams, target, propertyKey);
     };
-}
 
 /**
  *
@@ -258,53 +243,53 @@ export function Body(target: Object, propertyKey: string | symbol, parameterInde
 
 /**
  *
- * @param {boolean} enable
- * @returns {Function}
+ * @returns {(target, propertyName) => void}
+ * @constructor
  */
-export function PathParamProperty(enable = true): Function {
-    return (target, propertyName) =>
-        Reflect.defineMetadata(pathParamPropertyMetadataKey, {name: propertyName}, target, propertyName);
-}
+export const PathParamProperty = () =>
+    (target, propertyName) =>
+        Reflect.defineMetadata(pathParamPropertyMetadataKey, {name: propertyName}, target, propertyName)
 
 /**
  *
  * @param {Function} mapper
- * @returns {Function}
+ * @returns {(target: Object, propertyKey: (string | symbol)) => void}
+ * @constructor
  */
-export function Mapper(mapper: Function): Function {
-    return (target: Object, propertyKey: string | symbol) =>
+export const Mapper = (mapper: Function) =>
+    (target: Object, propertyKey: string | symbol) =>
         Reflect.defineMetadata(mapperMetadataKey, mapper, target, propertyKey);
-}
 
 /**
  *
  * @param {{[p: string]: T}} headers
- * @returns {Function}
+ * @returns {(target: Object, propertyKey: string) => void}
+ * @constructor
  */
-export function Headers<T extends any>(headers: { [key: string]: T }): Function {
-    return (target: Object, propertyKey: string) =>
+export const Headers = <T extends any>(headers: { [key: string]: T }) =>
+    (target: Object, propertyKey: string) =>
         Reflect.defineMetadata(headersMetadataKey, headers, target, propertyKey);
-}
 
 /**
  *
  * @param {(request: Request_) => Request_} before_
- * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
+ * @returns {(target: Object, propertyKey: string) => void}
+ * @constructor
  */
-export function Before(before_: (request: Request_) => Request_) {
-    return (target: Object, propertyKey: string) =>
+export const Before = (before_: (request: Request_) => Request_) =>
+    (target: Object, propertyKey: string) =>
         Reflect.defineMetadata(beforeMetadataKey, before_, target, propertyKey);
-}
+
 
 /**
- *
+ * 
  * @param {Handler} handler
- * @returns {(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void}
+ * @returns {(target: Object, propertyKey: string) => void}
+ * @constructor
  */
-export function HandlerError(handler: Handler) {
-    return (target: Object, propertyKey: string) =>
+export const HandlerError = (handler: Handler) =>
+    (target: Object, propertyKey: string) =>
         Reflect.defineMetadata(exceptionHandlerMetadataKey, handler, target, propertyKey);
-}
 
 
 /**
@@ -508,7 +493,7 @@ interface ConfigHttp {
 }
 
 /**
- *
+ * 
  */
 export interface Request_ {
     readonly method: string,
