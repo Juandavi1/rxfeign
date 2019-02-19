@@ -3,7 +3,12 @@
  */
 import { Observable } from 'rxjs/internal/Observable';
 import 'reflect-metadata';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosRequestConfig } from 'axios';
+/**
+ *
+ */
+declare type RemoveAttr<T> = Pick<T, Exclude<keyof T, 'url' | 'data' | 'params' | 'headers' | 'baseURL' | 'method'>>;
+export declare type FeignConfig = Partial<RemoveAttr<AxiosRequestConfig>>;
 /**
  *
  */
@@ -77,6 +82,13 @@ export declare const Delete: (url?: string, statusCodeOk?: number) => (target: O
  * @returns {Function}
  */
 export declare const PathParam: (param?: string) => (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
+/**
+ *
+ * @param {FeignConfig} config
+ * @returns {(target: Object, propertyKey: (string | symbol)) => void}
+ * @constructor
+ */
+export declare const Config: (config: Partial<Pick<AxiosRequestConfig, "transformRequest" | "transformResponse" | "paramsSerializer" | "timeout" | "withCredentials" | "adapter" | "auth" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "onUploadProgress" | "onDownloadProgress" | "maxContentLength" | "validateStatus" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy" | "cancelToken">>) => (target: Object, propertyKey: string | symbol) => void;
 /**
  *
  * @param {string} param_
@@ -176,6 +188,7 @@ interface ConfigHttp {
     headers: {
         [key: string]: any;
     };
+    config?: FeignConfig;
 }
 /**
  *

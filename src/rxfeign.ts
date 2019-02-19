@@ -5,7 +5,7 @@
 import {catchError, map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
-import axios, {AxiosError} from 'axios'
+import axios, {AxiosError, AxiosRequestConfig} from 'axios'
 import {from, throwError} from "rxjs";
 
 /**
@@ -20,6 +20,15 @@ const mapperMetadataKey = Symbol('__mapper__');
 const headersMetadataKey = Symbol('__headers__');
 const beforeMetadataKey = Symbol('__headers__');
 const exceptionHandlerMetadataKey = Symbol('__handlerError__');
+const configMetadataKey = Symbol('__config__');
+
+/**
+ * 
+ */
+
+type RemoveAttr<T> = Pick<T, Exclude<keyof T, 'url'|'data'|'params'|'headers'|'baseURL'|'method'>>
+
+export type FeignConfig = Partial<RemoveAttr<AxiosRequestConfig>>  
 
 /**
  *
@@ -125,8 +134,7 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
             const especificHeaders: Function = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || null;
             const before: (r: Request_) => Request_ = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
             const exceptionHandler: Handler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
-            // Reflect.deleteMetadata(pathParamMetadataKey, target, propertyKey);
-
+            let config: FeignConfig = Reflect.getMetadata(configMetadataKey, target, propertyKey) || {};
 
             if (urlToMatch.charAt(0) == '/')
                 urlToMatch = urlToMatch.substr(1, urlToMatch.length)
@@ -142,6 +150,10 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
             if (typeof mainConfig === 'object') {
                 mainUrl = mainConfig.url;
                 UtilsHttp.prepareHeaders(mainConfig.headers, headers);
+                config = mainConfig.config ? {
+                    ...mainConfig.config,
+                    ...config
+                } : config
             } else
                 mainUrl = mainConfig;
 
@@ -171,7 +183,8 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
                 data: request.body,
                 headers: request.headers,
                 url: request.url,
-                responseType: "json"
+                responseType: "json",
+                ...config,
             }))
                 .pipe(
                     map(({data}) => mapper ? mapper(data) : data),
@@ -213,6 +226,16 @@ export const PathParam = (param?: string) =>
         });
         Reflect.defineMetadata(pathParamMetadataKey, pathParams, target, propertyKey);
     };
+
+/**
+ * 
+ * @param {FeignConfig} config
+ * @returns {(target: Object, propertyKey: (string | symbol)) => void}
+ * @constructor
+ */
+export const Config = (config: FeignConfig) =>
+    (target: Object, propertyKey: string | symbol) =>
+        Reflect.defineMetadata(configMetadataKey, config, target, propertyKey);
 
 /**
  *
@@ -489,7 +512,8 @@ interface PathProperty {
  */
 interface ConfigHttp {
     url: string,
-    headers: { [key: string]: any }
+    headers: { [key: string]: any },
+    config?: FeignConfig
 }
 
 /**
