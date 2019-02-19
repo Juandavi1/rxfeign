@@ -23,7 +23,9 @@
     "typescript",
     "decorator",
     "es6",
-    "axios"
+    "axios",
+    "request",
+    "https"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
