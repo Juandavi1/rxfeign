@@ -2,10 +2,11 @@
  * @author Juan David Correa
  */
 
-import {RxHR, RxHttpRequestResponse} from '@akanass/rx-http-request';
 import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
+import axios, {AxiosResponse} from 'axios'
+import {from} from "rxjs";
 
 /**
  *
@@ -164,16 +165,15 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
 
             request = before ? before(request) : request;
             interceptors.forEach(i => request = i.intercep(request));
-
-            return RxHR[method](request.url, {
+            
+            return from(axios[method](request.url, {
                 headers: request.headers,
                 body: request.body,
-                qsStringifyOptions: {
-                    arrayFormat: 'repeat',
-                },
-            })
+            }))
                 .pipe(
-                    map(value => mapBodyAndControlError(value as RxHttpRequestResponse, exceptionHandler, statusCodeOk)),
+                    map((value: AxiosResponse) => 
+                        mapBodyAndControlError(value, exceptionHandler, statusCodeOk)
+                    ),
                     map(body => mapper ? mapper(body) : body),
                 );
         };
@@ -187,17 +187,17 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
  * @param statusCodeOk
  * @returns {any}
  */
-function mapBodyAndControlError(value: RxHttpRequestResponse, exceptionHandler: Handler, statusCodeOk) {
-    const {body, statusCode, request} = value.response;
-    if (statusCode < statusCodeOk) {
-        return body ? JSON.parse(body) : body;
+function mapBodyAndControlError(value: AxiosResponse, exceptionHandler: Handler, statusCodeOk) {
+    const {data, status, request} = value;
+    if (status < statusCodeOk) {
+        return data ? JSON.parse(data) : data;
     } else if (exceptionHandler) {
-        throw exceptionHandler(body, statusCode, request);
+        throw exceptionHandler(data, status, request);
     } else {
-        if (body && body.message && body.error) {
-            throw new HttpRequestException(body.error, statusCode, body.message);
+        if (data && data.message && data.error) {
+            throw new HttpRequestException(data.error, status, data.message);
         } else {
-            throw new HttpRequestException(JSON.stringify(body), statusCode, String());
+            throw new HttpRequestException(JSON.stringify(data), status, String());
         }
     }
 }

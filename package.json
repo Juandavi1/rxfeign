@@ -24,13 +24,13 @@
   "author": "juan david correa",
   "license": "ISC",
   "dependencies": {
-    "@akanass/rx-http-request": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.4.0",
     "typescript": "^3.3.1"
   },
   "devDependencies": {
     "gulp": "^3.8",
-    "gulp-uglify-es": "^1.0.4"
+    "gulp-uglify-es": "^1.0.4",
+    "axios": "^0.18.0"
   }
 }
