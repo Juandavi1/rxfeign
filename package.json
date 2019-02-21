@@ -1,6 +1,6 @@
 {
   "name": "rxfeign",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "description": "to make request with annotations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,7 +36,8 @@
   "dependencies": {
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.4.0",
-    "typescript": "^3.3.1"
+    "typescript": "^3.3.1",
+    "minimatch": ">=3.0.2"
   },
   "devDependencies": {
     "gulp": "^3.8",

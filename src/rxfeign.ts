@@ -5,7 +5,7 @@
 import {catchError, map} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
-import axios, {AxiosError, AxiosRequestConfig} from 'axios'
+import axios, {AxiosAdapter, AxiosBasicCredentials, AxiosError, AxiosProxyConfig} from 'axios'
 import {from, throwError} from "rxjs";
 
 /**
@@ -26,21 +26,37 @@ const configMetadataKey = Symbol('__config__');
  *
  */
 
-type RemoveAttr<T> = Pick<T, Exclude<keyof T, 'url' | 'data' | 'params' | 'headers' | 'baseURL' | 'method'>>
+export interface FeignConfig {
+    url?: string;
+    headers?: { [key: string]: any };
+    timeout?: number;
+    withCredentials?: boolean;
+    adapter?: AxiosAdapter;
+    auth?: AxiosBasicCredentials;
+    responseType?: string;
+    xsrfCookieName?: string;
+    xsrfHeaderName?: string;
+    maxContentLength?: number;
+    maxRedirects?: number;
+    httpAgent?: any;
+    httpsAgent?: any;
+    proxy?: AxiosProxyConfig | false;
+}
 
-export type FeignConfig = Partial<RemoveAttr<AxiosRequestConfig>>
+export type FeignConfigMethod = Partial<Pick<FeignConfig, Exclude<keyof FeignConfig, 'url' | 'headers'>>>
+
 
 /**
  *
  */
 export interface HttpInterceptor {
-    intercep: (req: Request_) => Request_
+    intercep: (req: FeignRequest) => FeignRequest
 }
 
 /**
  *
  */
-export type Handler = <U extends HttpRequestException>(error: AxiosError) => U
+export type Handler = <U extends FeignRequestException>(error: AxiosError) => U
 
 /**
  *
@@ -52,16 +68,15 @@ export const interceptors: HttpInterceptor[] = [];
  *
  * @param {T} interceptor
  */
-export function addInterceptors<T extends { new(): HttpInterceptor }>(...interceptor: T[]): void {
+export const addInterceptors = <T extends { new(): HttpInterceptor }>(...interceptor: T[]) =>
     interceptor.forEach(i => interceptors.unshift(new i()))
-}
 
 /**
  *
  * @param {string | Partial<ConfigHttp>} config
  * @returns {(target) => void}
  */
-export const Client = (config: string | Partial<ConfigHttp>) =>
+export const Client = (config: string | Partial<FeignConfig>) =>
     target => Reflect.defineMetadata(classMetadataKey, config, target)
 
 /**
@@ -124,54 +139,45 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
 
     return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
-        descriptor.value = (...arguments_) => {
+        descriptor.value = (...argumentsHttp) => {
 
-            const mainConfig: ConfigHttp = Reflect.getMetadata(classMetadataKey, target.constructor);
+            let mainConfig: FeignConfig | string = Reflect.getMetadata(classMetadataKey, target.constructor);
             const pathParams: Param[] = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
             const queryParams: Param[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
             const bodyParams: number[] = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];
             const mapper: Function = Reflect.getMetadata(mapperMetadataKey, target, propertyKey) || null;
-            const especificHeaders: Function = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || null;
-            const before: (r: Request_) => Request_ = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
+            const especificHeaders: { [key: string]: any } = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || Object();
+            const before: (r: FeignRequest) => FeignRequest = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
             const exceptionHandler: Handler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
-            let config: FeignConfig = Reflect.getMetadata(configMetadataKey, target, propertyKey) || {};
+            const config: FeignConfigMethod = Reflect.getMetadata(configMetadataKey, target, propertyKey) || Object();
 
             if (urlToMatch.charAt(0) == '/')
                 urlToMatch = urlToMatch.substr(1, urlToMatch.length)
 
-            const headers: HeadersHttp = new HeadersHttp();
-            let mainUrl = String();
-            const argumentsHttp = arguments_;
+            let mainUrl = typeof mainConfig === 'object' ? mainConfig.url : mainConfig;
             let url = String(urlToMatch);
+
             url = UtilsHttp.buildPathParams(pathParams, argumentsHttp, url);
-
             const queryParamsUrl = UtilsHttp.buildQueryParams(queryParams, argumentsHttp);
-
-            if (typeof mainConfig === 'object') {
-                mainUrl = mainConfig.url;
-                UtilsHttp.prepareHeaders(mainConfig.headers, headers);
-                config = mainConfig.config ? {
-                    ...mainConfig.config,
-                    ...config
-                } : config
-            } else
-                mainUrl = mainConfig;
 
             if (mainUrl.charAt(mainUrl.length - 1) !== '/')
                 mainUrl = mainUrl.concat('/')
 
             mainUrl = mainUrl.concat(url).concat(queryParamsUrl === '?' ? '' : queryParamsUrl);
 
-            const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : {};
+            const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : Object();
 
-            if (especificHeaders)
-                Object.keys(especificHeaders)
-                    .forEach(i => headers.set(i, especificHeaders[i]));
+            if (typeof mainConfig === 'object') {
+                mainConfig.headers = {
+                    ...mainConfig.headers,
+                    ...especificHeaders
+                }
+            }
 
-            let request: Request_ = {
+            let request: FeignRequest = {
                 url: mainUrl,
                 body: body_,
-                headers: headers.getHeaders(),
+                headers: typeof mainConfig === 'object' ? mainConfig.headers : especificHeaders ? especificHeaders : Object(),
                 method: method,
             };
 
@@ -179,12 +185,12 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
             interceptors.forEach(i => request = i.intercep(request));
 
             return from(axios.request({
+                ... (typeof mainConfig === 'object' ? mainConfig : Object()),
+                ...config,
                 method: request.method,
                 data: request.body,
                 headers: request.headers,
-                url: request.url,
-                responseType: "json",
-                ...config,
+                url: request.url
             }))
                 .pipe(
                     map(({data}) => mapper ? mapper(data) : data),
@@ -208,8 +214,8 @@ function mapError(error: AxiosError, exceptionHandler: Handler, statusCodeOk): O
     const {response} = error
     const {data} = config
     const objError = exceptionHandler ? exceptionHandler(error) : (data && data.message && data.error) ?
-        new HttpRequestException(data.error, response ? response.status : 504, data.message) :
-        new HttpRequestException(JSON.stringify(data), response ? response.status : 504, String());
+        new FeignRequestException(data.error, response ? response.status : 504, data.message) :
+        new FeignRequestException(JSON.stringify(data), response ? response.status : 504, String());
     return throwError(objError)
 }
 
@@ -230,11 +236,11 @@ export const PathParam = (param?: string) =>
 
 /**
  *
- * @param {FeignConfig} config
+ * @param {FeignConfigClient} config
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
  */
-export const Config = (config: FeignConfig) =>
+export const Config = (config: FeignConfigMethod) =>
     (target: Object, propertyKey: string | symbol) =>
         Reflect.defineMetadata(configMetadataKey, config, target, propertyKey);
 
@@ -300,7 +306,7 @@ export const Headers = <T extends any>(headers: { [key: string]: T }) =>
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export const Before = (before_: (request: Request_) => Request_) =>
+export const Before = (before_: (request: FeignRequest) => FeignRequest) =>
     (target: Object, propertyKey: string) =>
         Reflect.defineMetadata(beforeMetadataKey, before_, target, propertyKey);
 
@@ -320,21 +326,6 @@ export const HandlerError = (handler: Handler) =>
  *
  */
 class UtilsHttp {
-
-    /**
-     *
-     * @param obj
-     * @param {Headers} headers
-     */
-    public static prepareHeaders(obj = {}, headers: HeadersHttp): void {
-        Object.keys(obj).forEach(key =>
-            !headers.has(obj[key]) ? headers.set(key, obj[key]) : null,
-        );
-
-        if (!headers.has('Content-Type')) {
-            headers.set('Content-Type', 'application/json');
-        }
-    }
 
     /**
      *
@@ -432,7 +423,7 @@ class UtilsHttp {
 /**
  *
  */
-export class HttpRequestException {
+export class FeignRequestException {
     constructor(
         public error: string,
         public statusCode: number,
@@ -444,54 +435,7 @@ export class HttpRequestException {
 /**
  *
  */
-
-class HeadersHttp {
-
-    /**
-     *
-     * @type {Map<any, any>}
-     */
-    private headers: Map<string, any> = new Map();
-
-    constructor() {
-    }
-
-    /**
-     *
-     * @param {string} key
-     * @returns {boolean}
-     */
-    public has(key: string): boolean {
-        return this.headers.has(key);
-    }
-
-    /**
-     *
-     * @param {string} key
-     * @param header
-     * @returns {this}
-     */
-    public set(key: string, header: any): this {
-        this.headers.set(key, header);
-        return this;
-    }
-
-    /**
-     *
-     * @returns {any}
-     */
-    public getHeaders() {
-        const headers = Object();
-        Array.from(this.headers.keys())
-            .forEach(key => headers[key] = this.headers.get(key));
-        return headers;
-    }
-}
-
-/**
- *
- */
-export type HttpObservable<t> = Observable<t> & void
+export type HttpObservable<O> = void & Observable<O>
 
 /**
  *
@@ -508,21 +452,13 @@ interface PathProperty {
     name: string
 }
 
-/**
- *
- */
-interface ConfigHttp {
-    url: string,
-    headers: { [key: string]: any },
-    config?: FeignConfig
-}
 
 /**
  *
  */
-export interface Request_ {
+export interface FeignRequest {
     readonly method: string,
     body: any,
-    readonly headers: HeadersHttp,
+    readonly headers: { [key: string]: any },
     readonly url: string
 }

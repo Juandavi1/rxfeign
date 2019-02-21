@@ -1,9 +1,8 @@
-### RxFeign (Request en Sevidor y Cliente)
-#### IMPORTANTE
-Este primer release solo tiene unas cuantas funcionalidades basicas,
-si necesitas hacer request con mucha mas configuracion mejor busca otra libreria. 
+### RxFeign (Request en Sevidor y Cliente) JS
+
 #### Motivacion
 realizar peticiones por medio de anotaciones
+
 #### Instalacion 
 ```sh
 $ yarn add axios rxjs rxfeign
@@ -18,41 +17,51 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```
 
 #### Anotaciones
-   - *@Client*
+   - *@Client*  
    recibe dos tipos de parametro, un string o un objeto
         * string : url base (http://domain/)
-        * objecto : este objeto por el momento solo tiene dos atributos, la url base y los headers 
-            globales para todos los request que se hacen dentro de esa clase.  
-            Si no se define el header __Content-Type__ por defecto es __application/json__.
-        * config: en este objeto se puede definir toda la configuracion que se puede establecer en 
-            el objeto de configuracion definido por axios (AxiosRequestConfig). para mayor informacion 
-            visitar https://github.com/axios/axios
-   
+        * objecto : permite definir una configuracion global para todos los request dentro de esta clase. este objeto definido de la siguiente manera:
+
+```typescript
+    export interface FeignConfig {
+        url?: string;
+        headers?: { [key: string]: any };
+        timeout?: number;
+        withCredentials?: boolean;
+        adapter?: AxiosAdapter;
+        auth?: AxiosBasicCredentials;
+        responseType?: string;
+        xsrfCookieName?: string;
+        xsrfHeaderName?: string;
+        maxContentLength?: number;
+        maxRedirects?: number;
+        httpAgent?: any;
+        httpsAgent?: any;
+        proxy?: AxiosProxyConfig | false;
+    }
+```   
+   ejemplo: 
 ```typescript
     @Client({
-     url: 'https://jsonplaceholder.typicode.com/posts/',
-     headers:{},  // opcional,
-     config:{
-         timeout:99
-     } // opcional
+        url: 'https://jsonplaceholder.typicode.com/posts/',
+        headers:{}, 
+        timeout:99
     })
-    export class Post{}
+    export class User{}
     
     o
     
     @Client('https://jsonplaceholder.typicode.com/posts/')
-    export class Post{}
+    export class User{}
 ```
    - *@Config*  
-   esta anotacion recibe por parametro el mismo objeto que se define en *config* de la anotacion *@Client*
-   pero esta configuracion solo aplicara para el metodo anotado, si hay atributos igual en el config de *@Client* entonces seran sobrescritos. En el siguiente ejemplo, el timeout del request sera *1*.
+   esta anotacion recibe por parametro el mismo objeto que se define en la anotacion *@Client*
+   pero esta configuracion solo aplicara para el metodo anotado, si hay atributos igual que en *@Client* entonces seran sobrescritos. En el siguiente ejemplo, el timeout del request sera *1*.
    
 ```typescript
     @Client({
      url: 'https://jsonplaceholder.typicode.com/posts/',
-     config:{ // config axios
-         timeout:99 // sobrescrito
-     }
+     timeout:99 // sobrescrito
     })
     export class Post{
         
@@ -63,7 +72,6 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
         public findById(
             @PathParam() id: number
         ): HttpObservable<any>
-    
     }
 ```
    
@@ -261,6 +269,8 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 
 ```typescript
     
+    import { addInterceptors } from 'rxfeign';
+
 
     export class Main implements HttpInterceptor {
         

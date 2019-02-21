@@ -3,22 +3,39 @@
  */
 import { Observable } from 'rxjs/internal/Observable';
 import 'reflect-metadata';
-import { AxiosError, AxiosRequestConfig } from 'axios';
+import { AxiosAdapter, AxiosBasicCredentials, AxiosError, AxiosProxyConfig } from 'axios';
 /**
  *
  */
-declare type RemoveAttr<T> = Pick<T, Exclude<keyof T, 'url' | 'data' | 'params' | 'headers' | 'baseURL' | 'method'>>;
-export declare type FeignConfig = Partial<RemoveAttr<AxiosRequestConfig>>;
+export interface FeignConfig {
+    url?: string;
+    headers?: {
+        [key: string]: any;
+    };
+    timeout?: number;
+    withCredentials?: boolean;
+    adapter?: AxiosAdapter;
+    auth?: AxiosBasicCredentials;
+    responseType?: string;
+    xsrfCookieName?: string;
+    xsrfHeaderName?: string;
+    maxContentLength?: number;
+    maxRedirects?: number;
+    httpAgent?: any;
+    httpsAgent?: any;
+    proxy?: AxiosProxyConfig | false;
+}
+export declare type FeignConfigMethod = Partial<Pick<FeignConfig, Exclude<keyof FeignConfig, 'url' | 'headers'>>>;
 /**
  *
  */
 export interface HttpInterceptor {
-    intercep: (req: Request_) => Request_;
+    intercep: (req: FeignRequest) => FeignRequest;
 }
 /**
  *
  */
-export declare type Handler = <U extends HttpRequestException>(error: AxiosError) => U;
+export declare type Handler = <U extends FeignRequestException>(error: AxiosError) => U;
 /**
  *
  */
@@ -27,15 +44,13 @@ export declare const interceptors: HttpInterceptor[];
  *
  * @param {T} interceptor
  */
-export declare function addInterceptors<T extends {
-    new (): HttpInterceptor;
-}>(...interceptor: T[]): void;
+export declare const addInterceptors: <T extends new () => HttpInterceptor>(...interceptor: T[]) => void;
 /**
  *
  * @param {string | Partial<ConfigHttp>} config
  * @returns {(target) => void}
  */
-export declare const Client: (config: string | Partial<ConfigHttp>) => (target: any) => void;
+export declare const Client: (config: string | Partial<FeignConfig>) => (target: any) => void;
 /**
  *
  * @param {string} url
@@ -84,11 +99,11 @@ export declare const Delete: (url?: string, statusCodeOk?: number) => (target: O
 export declare const PathParam: (param?: string) => (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
 /**
  *
- * @param {FeignConfig} config
+ * @param {FeignConfigClient} config
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
  */
-export declare const Config: (config: Partial<Pick<AxiosRequestConfig, "auth" | "timeout" | "transformRequest" | "transformResponse" | "paramsSerializer" | "withCredentials" | "adapter" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "onUploadProgress" | "onDownloadProgress" | "maxContentLength" | "validateStatus" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy" | "cancelToken">>) => (target: Object, propertyKey: string | symbol) => void;
+export declare const Config: (config: Partial<Pick<FeignConfig, "timeout" | "withCredentials" | "adapter" | "auth" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "maxContentLength" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy">>) => (target: Object, propertyKey: string | symbol) => void;
 /**
  *
  * @param {string} param_
@@ -130,7 +145,7 @@ export declare const Headers: <T extends any>(headers: {
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export declare const Before: (before_: (request: Request_) => Request_) => (target: Object, propertyKey: string) => void;
+export declare const Before: (before_: (request: FeignRequest) => FeignRequest) => (target: Object, propertyKey: string) => void;
 /**
  *
  * @param {Handler} handler
@@ -141,7 +156,7 @@ export declare const HandlerError: (handler: Handler) => (target: Object, proper
 /**
  *
  */
-export declare class HttpRequestException {
+export declare class FeignRequestException {
     error: string;
     statusCode: number;
     message: string;
@@ -150,53 +165,15 @@ export declare class HttpRequestException {
 /**
  *
  */
-declare class HeadersHttp {
-    /**
-     *
-     * @type {Map<any, any>}
-     */
-    private headers;
-    constructor();
-    /**
-     *
-     * @param {string} key
-     * @returns {boolean}
-     */
-    has(key: string): boolean;
-    /**
-     *
-     * @param {string} key
-     * @param header
-     * @returns {this}
-     */
-    set(key: string, header: any): this;
-    /**
-     *
-     * @returns {any}
-     */
-    getHeaders(): any;
-}
+export declare type HttpObservable<O> = void & Observable<O>;
 /**
  *
  */
-export declare type HttpObservable<t> = Observable<t> & void;
-/**
- *
- */
-interface ConfigHttp {
-    url: string;
-    headers: {
-        [key: string]: any;
-    };
-    config?: FeignConfig;
-}
-/**
- *
- */
-export interface Request_ {
+export interface FeignRequest {
     readonly method: string;
     body: any;
-    readonly headers: HeadersHttp;
+    readonly headers: {
+        [key: string]: any;
+    };
     readonly url: string;
 }
-export {};
