@@ -12,8 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const rxfeign_1 = require("./rxfeign");
 let Example = class Example {
     constructor() { }
-    get(id) {
-    }
+    get(id) { }
 };
 __decorate([
     rxfeign_1.Get(),

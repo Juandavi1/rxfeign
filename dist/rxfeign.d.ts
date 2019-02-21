@@ -103,7 +103,7 @@ export declare const PathParam: (param?: string) => (target: Object, propertyKey
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
  */
-export declare const Config: (config: Partial<Pick<FeignConfig, "timeout" | "withCredentials" | "adapter" | "auth" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "maxContentLength" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy">>) => (target: Object, propertyKey: string | symbol) => void;
+export declare const Config: (config: Partial<Pick<FeignConfig, "auth" | "timeout" | "withCredentials" | "adapter" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "maxContentLength" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy">>) => (target: Object, propertyKey: string | symbol) => void;
 /**
  *
  * @param {string} param_
