@@ -96,7 +96,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 
 ```typescript
     @Client('https://jsonplaceholder.typicode.com/posts/')
-    export class Post {
+    export class User {
     
       constructor(){}
     
@@ -109,7 +109,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
     es equivalente a 
     
     @Client('https://jsonplaceholder.typicode.com/posts/')
-    export class Post {
+    export class User {
     
       constructor(){}
     
