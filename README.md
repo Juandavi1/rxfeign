@@ -265,7 +265,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
    el cual esta definido de la siguiente manera: 
 
 ```typescript        
-        export class HttpRequestException {
+        export class FeignRequestException {
             constructor(
                 public error: string,
                 public statusCode: number,
