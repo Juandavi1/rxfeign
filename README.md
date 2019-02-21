@@ -134,7 +134,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
     ): HttpObservable<PostModel> {}
 ```
    si el parametro que se pasa es un objeto, se mapeara cada atributo valor en la url 
-   y no se define el string que se pasa por parametro. 
+   y no se define el string que se pasa por parametro en la anotacion. 
    la salida del siguiente ejemplo seria la siguiente:  
    __/1?attr=holaa&name=lord&id=99__
    
