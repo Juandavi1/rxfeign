@@ -1,6 +1,6 @@
 {
   "name": "rxfeign",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "to make request with annotations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
