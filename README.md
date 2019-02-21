@@ -93,6 +93,33 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```
    - *@PathParam*       
    recibe por parametro el string que contiene el id que coincide con la expresion en la url como se    ve en el ejemplo   anterior. Este parametro es opcional, si no se define entonces se agregara al     final de la url. 
+
+```typescript
+    @Client('https://jsonplaceholder.typicode.com/posts/')
+    export class Post {
+    
+      constructor(){}
+    
+      @Get('{id}')
+      public findById(
+        @PathParam('id') id: number,
+      ): HttpObservable<PostModel> {}
+    }
+    
+    es equivalente a 
+    
+    @Client('https://jsonplaceholder.typicode.com/posts/')
+    export class Post {
+    
+      constructor(){}
+    
+      @Get()
+      public findById(
+        @PathParam() id: number,
+      ): HttpObservable<PostModel> {}
+    }
+```
+   
    
    - *@Query*  
    recibe por parametro un string con el nombre que ira el query en la url.  
