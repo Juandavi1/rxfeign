@@ -49,26 +49,26 @@ export type FeignConfigMethod = Partial<Pick<FeignConfig, Exclude<keyof FeignCon
 /**
  *
  */
-export interface HttpInterceptor {
+export interface FeignInterceptor {
     intercep: (req: FeignRequest) => FeignRequest
 }
 
 /**
  *
  */
-export type Handler = <U extends FeignRequestException>(error: AxiosError) => U
+export type FeignHandler = <U extends FeignRequestException>(error: AxiosError) => U
 
 /**
  *
  */
 
-export const interceptors: HttpInterceptor[] = [];
+export const interceptors: FeignInterceptor[] = [];
 
 /**
  *
  * @param {T} interceptor
  */
-export const addInterceptors = <T extends { new(): HttpInterceptor }>(...interceptor: T[]) =>
+export const addInterceptors = <T extends { new(): FeignInterceptor }>(...interceptor: T[]) =>
     interceptor.forEach(i => interceptors.unshift(new i()))
 
 /**
@@ -148,7 +148,7 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
             const mapper: Function = Reflect.getMetadata(mapperMetadataKey, target, propertyKey) || null;
             const especificHeaders: { [key: string]: any } = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || Object();
             const before: (r: FeignRequest) => FeignRequest = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
-            const exceptionHandler: Handler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
+            const exceptionHandler: FeignHandler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
             const config: FeignConfigMethod = Reflect.getMetadata(configMetadataKey, target, propertyKey) || Object();
 
             if (urlToMatch.charAt(0) == '/')
@@ -205,11 +205,11 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
 /**
  *
  * @param value
- * @param {Handler} exceptionHandler
+ * @param {FeignHandler} exceptionHandler
  * @param statusCodeOk
  * @returns {any}
  */
-function mapError(error: AxiosError, exceptionHandler: Handler, statusCodeOk): Observable<never> {
+function mapError(error: AxiosError, exceptionHandler: FeignHandler, statusCodeOk): Observable<never> {
     const {config} = error
     const {response} = error
     const {data} = config
@@ -313,11 +313,11 @@ export const Before = (before_: (request: FeignRequest) => FeignRequest) =>
 
 /**
  *
- * @param {Handler} handler
+ * @param {FeignHandler} handler
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export const HandlerError = (handler: Handler) =>
+export const HandlerError = (handler: FeignHandler) =>
     (target: Object, propertyKey: string) =>
         Reflect.defineMetadata(exceptionHandlerMetadataKey, handler, target, propertyKey);
 

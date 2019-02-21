@@ -159,16 +159,9 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
    Esta anotacion no recibe parametros, el objeto que se reciba por parametro en el metodo 
    sera el body de la peticion. 
    
-   Ademas de eso, tambien esta la anotacion *@PathParamProperty* la cual permite 
+   Ademas de eso, con anotacion *@PathParamProperty* se puede
    definir el parametro que ira en la url atra vez del objecto que ira en el body. 
    La salida del siguiente ejemplo sera la siguiente:   
-   __url/88__  
-```json
-{
-  "id": 88,
-  "name": "Bodyy"
-}
-```
 
 ```typescript
 
@@ -185,10 +178,22 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
         }
     }
     
-    @Post('{id}')
+    @Post('{id}/any')
     public create(
         @Body object: PostModel // new PostModel(88,"Bodyy")
     ): HttpObservable<PostModel> {}
+```
+
+```json
+
+// url 
+ /88/any  
+ 
+// body 
+{
+  "id": 88,
+  "name": "Bodyy"
+}
 ```
 
    - *@Mapper*:  
@@ -214,7 +219,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
    el metodo que se pasa por parametro recibe un objeto de tipo Request que esta definido de la siguiente manera: 
    
 ```typescript
-    export interface Request_ {
+    export interface FeignRequest {
         readonly method: string,
         body: any,
         readonly headers: HeadersHttp,
@@ -223,7 +228,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```
 ```typescript
     export class Class {
-        public static before(req: Request_): Request_{
+        public static before(req: FeignRequest): FeignRequest{
             req.headers.set("otro","header")
             req.body = {
                 ...body,
@@ -255,8 +260,8 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
    - *@HandlerError*  
    Este metodo que se pasa por parametro recibe una instancia de tipo *__AxiosError__* y debe retornar la instancia que sera lanzada como excepcion.
    se espera que el usuario tenga establecido un manejador de excepciones global.
-   se puede lanzar una excepcion custom heredando de __HttpRequestException__
-   si no se define esta anotacion y hay un error entonces se lanzara una excepcion de tipo __HttpRequestException__
+   se puede lanzar una excepcion custom heredando de __FeignRequestException__
+   si no se define esta anotacion y hay un error entonces se lanzara una excepcion de tipo __FeignRequestException__
    el cual esta definido de la siguiente manera: 
 
 ```typescript        
@@ -273,7 +278,7 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```typescript
     export class Class {
         
-        public static error<MyClass extends HttpRequestException>(error: AxiosError): MyClase {
+        public static error<MyClass extends FeignRequestException>(error: AxiosError): MyClase {
             if(error.response.status === 404){
                 return new NotFoundHttp(...)
             }else{
@@ -290,16 +295,16 @@ import { Get , Client,PathParam, Query, HttpObservable } from 'rxfeign';
 ```
 
    - *addInterceptor*  
-   Este es un array el cual admite callbacks que reciben por parametro una clase que implemente la interfaz __HttpInterceptor__. 
+   Este es un array el cual admite callbacks que reciben por parametro una clase que implemente la interfaz __FeignInterceptor__. 
    Los interceptors se deben agregar en el main de la aplicacion. 
    Estos interceptores se llaman en todos los request que se realicen y despues de la anotacion *@Before* que este definida en los metodos. Es similar a la anotacion @Before solo que esta forma es global, todos los request pasaran por ahi.
 
 ```typescript
     
-    import { addInterceptors } from 'rxfeign';
+    import { addInterceptors, FeignInterceptor } from 'rxfeign';
 
 
-    export class Main implements HttpInterceptor {
+    export class Main implements FeignInterceptor {
         
         public start(): void{
             addInterceptors(Main)

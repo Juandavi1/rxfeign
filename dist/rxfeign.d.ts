@@ -29,22 +29,22 @@ export declare type FeignConfigMethod = Partial<Pick<FeignConfig, Exclude<keyof 
 /**
  *
  */
-export interface HttpInterceptor {
+export interface FeignInterceptor {
     intercep: (req: FeignRequest) => FeignRequest;
 }
 /**
  *
  */
-export declare type Handler = <U extends FeignRequestException>(error: AxiosError) => U;
+export declare type FeignHandler = <U extends FeignRequestException>(error: AxiosError) => U;
 /**
  *
  */
-export declare const interceptors: HttpInterceptor[];
+export declare const interceptors: FeignInterceptor[];
 /**
  *
  * @param {T} interceptor
  */
-export declare const addInterceptors: <T extends new () => HttpInterceptor>(...interceptor: T[]) => void;
+export declare const addInterceptors: <T extends new () => FeignInterceptor>(...interceptor: T[]) => void;
 /**
  *
  * @param {string | Partial<ConfigHttp>} config
@@ -103,7 +103,7 @@ export declare const PathParam: (param?: string) => (target: Object, propertyKey
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
  */
-export declare const Config: (config: Partial<Pick<FeignConfig, "auth" | "timeout" | "withCredentials" | "adapter" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "maxContentLength" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy">>) => (target: Object, propertyKey: string | symbol) => void;
+export declare const Config: (config: Partial<Pick<FeignConfig, "timeout" | "withCredentials" | "adapter" | "auth" | "responseType" | "xsrfCookieName" | "xsrfHeaderName" | "maxContentLength" | "maxRedirects" | "httpAgent" | "httpsAgent" | "proxy">>) => (target: Object, propertyKey: string | symbol) => void;
 /**
  *
  * @param {string} param_
@@ -148,11 +148,11 @@ export declare const Headers: <T extends any>(headers: {
 export declare const Before: (before_: (request: FeignRequest) => FeignRequest) => (target: Object, propertyKey: string) => void;
 /**
  *
- * @param {Handler} handler
+ * @param {FeignHandler} handler
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export declare const HandlerError: (handler: Handler) => (target: Object, propertyKey: string) => void;
+export declare const HandlerError: (handler: FeignHandler) => (target: Object, propertyKey: string) => void;
 /**
  *
  */
