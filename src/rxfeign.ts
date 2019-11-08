@@ -3,60 +3,34 @@
  */
 
 import {catchError, map} from 'rxjs/operators';
-import {Observable} from 'rxjs/internal/Observable';
 import 'reflect-metadata'
-import axios, {AxiosAdapter, AxiosBasicCredentials, AxiosError, AxiosProxyConfig} from 'axios'
-import {from, throwError} from "rxjs";
+import axios, {AxiosError} from 'axios'
+import {from, Observable, throwError} from "rxjs";
+import {UtilsHttp} from "./utils";
+import {
+    FeignConfig,
+    FeignConfigMethod,
+    FeignHandler,
+    FeignInterceptor,
+    FeignRequest,
+    FeignRequestException,
+    PathParams,
+    QueryParam,
+    BodyParam, HeaderParam
+} from "./types";
+import {
+    beforeMetadataKey,
+    bodyMetadataKey,
+    classMetadataKey,
+    configMetadataKey,
+    exceptionHandlerMetadataKey,
+    headersMetadataKey,
+    mapperMetadataKey,
+    pathParamMetadataKey,
+    pathParamPropertyMetadataKey,
+    queryMetadataKey
+} from "./constans";
 
-/**
- *
- */
-const pathParamMetadataKey = Symbol('__pathParam__');
-const queryMetadataKey = Symbol('__queryParam__');
-const classMetadataKey = Symbol('__class__');
-const bodyMetadataKey = Symbol('__body__');
-const pathParamPropertyMetadataKey = Symbol('__pathParamProperty__');
-const mapperMetadataKey = Symbol('__mapper__');
-const headersMetadataKey = Symbol('__headers__');
-const beforeMetadataKey = Symbol('__headers__');
-const exceptionHandlerMetadataKey = Symbol('__handlerError__');
-const configMetadataKey = Symbol('__config__');
-
-/**
- *
- */
-
-export interface FeignConfig {
-    url?: string;
-    headers?: { [key: string]: any };
-    timeout?: number;
-    withCredentials?: boolean;
-    adapter?: AxiosAdapter;
-    auth?: AxiosBasicCredentials;
-    responseType?: string;
-    xsrfCookieName?: string;
-    xsrfHeaderName?: string;
-    maxContentLength?: number;
-    maxRedirects?: number;
-    httpAgent?: any;
-    httpsAgent?: any;
-    proxy?: AxiosProxyConfig | false;
-}
-
-export type FeignConfigMethod = Partial<Pick<FeignConfig, Exclude<keyof FeignConfig, 'url' | 'headers'>>>
-
-
-/**
- *
- */
-export interface FeignInterceptor {
-    intercep: (req: FeignRequest) => FeignRequest
-}
-
-/**
- *
- */
-export type FeignHandler = <U extends FeignRequestException>(error: AxiosError) => U
 
 /**
  *
@@ -68,8 +42,8 @@ export const interceptors: FeignInterceptor[] = [];
  *
  * @param {T} interceptor
  */
-export const addInterceptors = <T extends { new(): FeignInterceptor }>(...interceptor: T[]) =>
-    interceptor.forEach(i => interceptors.unshift(new i()))
+export const addInterceptors = <T extends FeignInterceptor>(...interceptor: T[]) =>
+    interceptor.forEach(i => interceptors.unshift(i))
 
 /**
  *
@@ -141,61 +115,59 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
 
         descriptor.value = (...argumentsHttp) => {
 
-            let mainConfig: FeignConfig | string = Reflect.getMetadata(classMetadataKey, target.constructor);
-            const pathParams: Param[] = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
-            const queryParams: Param[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
-            const bodyParams: number[] = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];
-            const mapper: Function = Reflect.getMetadata(mapperMetadataKey, target, propertyKey) || null;
-            const especificHeaders: { [key: string]: any } = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || Object();
-            const before: (r: FeignRequest) => FeignRequest = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
-            const exceptionHandler: FeignHandler = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
-            const config: FeignConfigMethod = Reflect.getMetadata(configMetadataKey, target, propertyKey) || Object();
+            let classConfiguration: FeignConfig | string = Reflect.getMetadata(classMetadataKey, target.constructor);
+            const pathParams: PathParams[] = Reflect.getMetadata(pathParamMetadataKey, target, propertyKey) || [];
+            const queryParams: QueryParam[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
+            const bodyParams: BodyParam[] = Reflect.getMetadata(bodyMetadataKey, target, propertyKey) || [];
+            const mapper: string = Reflect.getMetadata(mapperMetadataKey, target, propertyKey) || null;
+            const headersParams: HeaderParam[] = Reflect.getMetadata(headersMetadataKey, target, propertyKey) || [];
+            const before: string = Reflect.getMetadata(beforeMetadataKey, target, propertyKey) || null;
+            const exceptionHandler: string = Reflect.getMetadata(exceptionHandlerMetadataKey, target, propertyKey) || null;
+            const configMethod: FeignConfigMethod = Reflect.getMetadata(configMetadataKey, target, propertyKey) || Object();
 
             if (urlToMatch.charAt(0) == '/')
                 urlToMatch = urlToMatch.substr(1, urlToMatch.length)
 
-            let mainUrl = typeof mainConfig === 'object' ? mainConfig.url : mainConfig;
+            let mainUrl = typeof classConfiguration === 'object' ? classConfiguration.url : classConfiguration;
             let url = String(urlToMatch);
 
-            url = UtilsHttp.buildPathParams(pathParams, argumentsHttp, url);
-            const queryParamsUrl = UtilsHttp.buildQueryParams(queryParams, argumentsHttp);
+            url = UtilsHttp.preparePathParams(pathParams, argumentsHttp, url);
+            const queryParamsUrl = UtilsHttp.prepareQueryParams(queryParams, argumentsHttp);
 
             if (mainUrl.charAt(mainUrl.length - 1) !== '/')
                 mainUrl = mainUrl.concat('/')
 
             mainUrl = mainUrl.concat(url).concat(queryParamsUrl === '?' ? '' : queryParamsUrl);
 
-            const body_ = method !== 'get' ? UtilsHttp.prepareBody(bodyParams, argumentsHttp) : Object();
+            const body_ = UtilsHttp.prepareBody(bodyParams, argumentsHttp);
 
-            if (typeof mainConfig === 'object') {
-                mainConfig.headers = {
-                    ...mainConfig.headers,
-                    ...especificHeaders
-                }
+            const headers = {
+                ...UtilsHttp.prepareHeaders(headersParams, argumentsHttp),
+                ...(typeof classConfiguration === 'object'?(classConfiguration.headers || {}):{})
             }
 
             let request: FeignRequest = {
                 url: mainUrl,
                 body: body_,
-                headers: typeof mainConfig === 'object' ? mainConfig.headers : especificHeaders ? especificHeaders : Object(),
+                headers,
                 method: method,
             };
 
-            request = before ? before(request) : request;
+            request = before ? target[before](request) : request;
             interceptors.forEach(i => request = i.intercep(request));
 
             return from(axios.request({
-                ... (typeof mainConfig === 'object' ? mainConfig : Object()),
-                ...config,
+                ... (typeof classConfiguration === 'object' ? classConfiguration : Object()),
+                ...configMethod,
                 method: request.method,
                 data: request.body,
                 headers: request.headers,
                 url: request.url
             }))
                 .pipe(
-                    map(({data}) => mapper ? mapper(data) : data),
-                    catchError((Error) =>
-                        mapError(Error, exceptionHandler, statusCodeOk)
+                    map(({data}) => mapper ? target[mapper](data) : data),
+                    catchError(Error =>
+                        mapError(Error, target[exceptionHandler], statusCodeOk)
                     ),
                 );
         };
@@ -210,13 +182,7 @@ function request(method: string, urlToMatch: string = '', statusCodeOk: number) 
  * @returns {any}
  */
 function mapError(error: AxiosError, exceptionHandler: FeignHandler, statusCodeOk): Observable<never> {
-    const {config} = error
-    const {response} = error
-    const {data} = config
-    const objError = exceptionHandler ? exceptionHandler(error) : (data && data.message && data.error) ?
-        new FeignRequestException(data.error, response ? response.status : 504, data.message) :
-        new FeignRequestException(JSON.stringify(data), response ? response.status : 504, String());
-    return throwError(objError)
+    return throwError(exceptionHandler ? exceptionHandler(error) : new FeignRequestException(error))
 }
 
 /**
@@ -225,12 +191,9 @@ function mapError(error: AxiosError, exceptionHandler: FeignHandler, statusCodeO
  * @returns {Function}
  */
 export const PathParam = (param?: string) =>
-    (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-        const pathParams: Param[] = Reflect.getOwnMetadata(pathParamMetadataKey, target, propertyKey) || [];
-        pathParams.unshift({
-            indexArgument: parameterIndex,
-            paramValue: param,
-        });
+    (target: Object, propertyKey: string | symbol, index_param: number) => {
+        const pathParams: PathParams[] = Reflect.getOwnMetadata(pathParamMetadataKey, target, propertyKey) || [];
+        pathParams.unshift({index_param, key: param});
         Reflect.defineMetadata(pathParamMetadataKey, pathParams, target, propertyKey);
     };
 
@@ -250,26 +213,22 @@ export const Config = (config: FeignConfigMethod) =>
  * @returns {Function}
  */
 export const Query = (param_?: string) =>
-    (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-        const queryParams: Param[] = Reflect.getOwnMetadata(queryMetadataKey, target, propertyKey) || [];
-        queryParams.unshift({
-            indexArgument: parameterIndex,
-            paramValue: param_,
-        });
+    (target: Object, propertyKey: string | symbol, index_param: number) => {
+        const queryParams: QueryParam[] = Reflect.getOwnMetadata(queryMetadataKey, target, propertyKey) || [];
+        queryParams.unshift({index_param, key: param_,});
         Reflect.defineMetadata(queryMetadataKey, queryParams, target, propertyKey);
     };
 
 /**
  *
- * @param {Object} target
- * @param {string | symbol} propertyKey
- * @param {number} parameterIndex
+ * @param key
  */
-export function Body(target: Object, propertyKey: string | symbol, parameterIndex: number) {
-    const bodyParams: number[] = Reflect.getOwnMetadata(bodyMetadataKey, target, propertyKey) || [];
-    bodyParams.unshift(parameterIndex);
-    Reflect.defineMetadata(bodyMetadataKey, bodyParams, target, propertyKey);
-}
+export const Body = (key: string = undefined) =>
+    (target: Object, propertyKey: string | symbol, index_param: number) => {
+        const bodyParams: BodyParam[] = Reflect.getOwnMetadata(bodyMetadataKey, target, propertyKey) || [];
+        bodyParams.unshift({index_param, key});
+        Reflect.defineMetadata(bodyMetadataKey, bodyParams, target, propertyKey);
+    }
 
 /**
  *
@@ -286,19 +245,23 @@ export const PathParamProperty = () =>
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
  */
-export const Mapper = (mapper: Function) =>
+export const Mapper = <T>(mapper: keyof T) =>
     (target: Object, propertyKey: string | symbol) =>
         Reflect.defineMetadata(mapperMetadataKey, mapper, target, propertyKey);
 
 /**
  *
- * @param {{[p: string]: T}} headers
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
+ * @param key
  */
-export const Headers = <T extends any>(headers: { [key: string]: T }) =>
-    (target: Object, propertyKey: string) =>
+export const Header = (key: string = undefined) =>
+    (target: Object, propertyKey: string | symbol, index_param: number) => {
+        const headers: HeaderParam[] = Reflect.getOwnMetadata(headersMetadataKey, target, propertyKey) || [];
+        headers.unshift({index_param, key});
         Reflect.defineMetadata(headersMetadataKey, headers, target, propertyKey);
+    }
+
 
 /**
  *
@@ -306,7 +269,7 @@ export const Headers = <T extends any>(headers: { [key: string]: T }) =>
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export const Before = (before_: (request: FeignRequest) => FeignRequest) =>
+export const Before = <T>(before_: keyof T) =>
     (target: Object, propertyKey: string) =>
         Reflect.defineMetadata(beforeMetadataKey, before_, target, propertyKey);
 
@@ -317,148 +280,6 @@ export const Before = (before_: (request: FeignRequest) => FeignRequest) =>
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export const HandlerError = (handler: FeignHandler) =>
+export const HandlerError = <T>(handler: keyof T) =>
     (target: Object, propertyKey: string) =>
         Reflect.defineMetadata(exceptionHandlerMetadataKey, handler, target, propertyKey);
-
-
-/**
- *
- */
-class UtilsHttp {
-
-    /**
-     *
-     * @param {Param[]} params
-     * @param argumentsHttp
-     * @returns {string}
-     */
-    public static buildQueryParams(params: Param[], argumentsHttp): string {
-
-        let queryParamsUrl: string = '?';
-        const ampersan: string = '&';
-        const empty: string = String();
-
-        params = params
-            .filter(param => argumentsHttp[param.indexArgument]);
-
-        params
-            .forEach((param, index) => {
-                if (typeof argumentsHttp[param.indexArgument] === 'object') {
-                    const keys = Object.keys(argumentsHttp[param.indexArgument]) || [];
-                    let tempCont = 0;
-                    for (const key in argumentsHttp[param.indexArgument]) {
-                        queryParamsUrl = queryParamsUrl.concat(
-                            `${key}=${argumentsHttp[param.indexArgument][key]}${tempCont === keys.length - 1 ? empty : ampersan}`,
-                        );
-                        tempCont++;
-                    }
-                } else {
-                    if (!param.paramValue)
-                        return;
-                    queryParamsUrl = queryParamsUrl.length > 1 ? queryParamsUrl.concat(ampersan) : queryParamsUrl;
-                    queryParamsUrl = queryParamsUrl.concat(
-                        `${param.paramValue}=${argumentsHttp[param.indexArgument]}${index === params.length - 1 ? empty : ampersan}`,
-                    );
-                }
-            });
-
-        return queryParamsUrl;
-    }
-
-    /**
-     *
-     * @param {Param[]} pathParam
-     * @param argumentsHttp
-     * @param {string} url
-     * @returns {string}
-     */
-    public static buildPathParams(pathParam: Param[], argumentsHttp, url: string): string {
-
-        url = url.replace(/\s/g, '').trim();
-        const wrapOpen = '{';
-        const wrapClose = '}';
-
-        pathParam
-            .filter(param => param.paramValue)
-            .forEach(param => {
-                if (!param.paramValue)
-                    return;
-                const pathParam: string = wrapOpen.concat(param.paramValue.toString()).concat(wrapClose);
-                if (url.includes(pathParam))
-                    url = url.replace(pathParam, argumentsHttp[param.indexArgument]);
-            });
-
-        pathParam
-            .filter(param => !param.paramValue)
-            .map(param => url += `/${argumentsHttp[param.indexArgument]}`);
-
-        argumentsHttp
-            .filter(arg => arg && typeof arg === 'object')
-            .forEach(obj =>
-                Object.keys(obj).forEach(key => {
-                    const keyPathParam: PathProperty = Reflect.getMetadata(pathParamPropertyMetadataKey, obj, key);
-                    if (keyPathParam)
-                        url = url.replace(`{${keyPathParam.name}}`, obj[keyPathParam.name]);
-                })
-            );
-        return url;
-    }
-
-    /**
-     *
-     * @param {number[]} params
-     * @param argumentsHttp
-     * @returns {any}
-     */
-    public static prepareBody(params: number[] = [], argumentsHttp = []): any {
-        let body = {};
-        params
-            .filter(i => typeof argumentsHttp[i] === 'object' && argumentsHttp[i])
-            .forEach(i => body = Object.assign({}, body, argumentsHttp[i]));
-        return body
-    }
-}
-
-/**
- *
- */
-export class FeignRequestException {
-    constructor(
-        public error: string,
-        public statusCode: number,
-        public message: string,
-    ) {
-    }
-}
-
-/**
- *
- */
-export type HttpObservable<O> = void & Observable<O>
-
-/**
- *
- */
-interface Param {
-    indexArgument: number
-    paramValue: string | object
-}
-
-/**
- *
- */
-interface PathProperty {
-    name: string
-}
-
-
-/**
- *
- */
-export interface FeignRequest {
-    readonly method: string,
-    body: any,
-    readonly headers: { [key: string]: any },
-    readonly url: string
-}

@@ -1,41 +1,8 @@
 /**
  * @author Juan David Correa
  */
-import { Observable } from 'rxjs/internal/Observable';
 import 'reflect-metadata';
-import { AxiosAdapter, AxiosBasicCredentials, AxiosError, AxiosProxyConfig } from 'axios';
-/**
- *
- */
-export interface FeignConfig {
-    url?: string;
-    headers?: {
-        [key: string]: any;
-    };
-    timeout?: number;
-    withCredentials?: boolean;
-    adapter?: AxiosAdapter;
-    auth?: AxiosBasicCredentials;
-    responseType?: string;
-    xsrfCookieName?: string;
-    xsrfHeaderName?: string;
-    maxContentLength?: number;
-    maxRedirects?: number;
-    httpAgent?: any;
-    httpsAgent?: any;
-    proxy?: AxiosProxyConfig | false;
-}
-export declare type FeignConfigMethod = Partial<Pick<FeignConfig, Exclude<keyof FeignConfig, 'url' | 'headers'>>>;
-/**
- *
- */
-export interface FeignInterceptor {
-    intercep: (req: FeignRequest) => FeignRequest;
-}
-/**
- *
- */
-export declare type FeignHandler = <U extends FeignRequestException>(error: AxiosError) => U;
+import { FeignConfig, FeignInterceptor } from "./types";
 /**
  *
  */
@@ -44,7 +11,7 @@ export declare const interceptors: FeignInterceptor[];
  *
  * @param {T} interceptor
  */
-export declare const addInterceptors: <T extends new () => FeignInterceptor>(...interceptor: T[]) => void;
+export declare const addInterceptors: <T extends FeignInterceptor>(...interceptor: T[]) => void;
 /**
  *
  * @param {string | Partial<ConfigHttp>} config
@@ -96,7 +63,7 @@ export declare const Delete: (url?: string, statusCodeOk?: number) => (target: O
  * @param {string} param
  * @returns {Function}
  */
-export declare const PathParam: (param?: string) => (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
+export declare const PathParam: (param?: string) => (target: Object, propertyKey: string | symbol, index_param: number) => void;
 /**
  *
  * @param {FeignConfigClient} config
@@ -109,14 +76,12 @@ export declare const Config: (config: Partial<Pick<FeignConfig, "auth" | "timeou
  * @param {string} param_
  * @returns {Function}
  */
-export declare const Query: (param_?: string) => (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
+export declare const Query: (param_?: string) => (target: Object, propertyKey: string | symbol, index_param: number) => void;
 /**
  *
- * @param {Object} target
- * @param {string | symbol} propertyKey
- * @param {number} parameterIndex
+ * @param key
  */
-export declare function Body(target: Object, propertyKey: string | symbol, parameterIndex: number): void;
+export declare const Body: (key?: string) => (target: Object, propertyKey: string | symbol, index_param: number) => void;
 /**
  *
  * @returns {(target, propertyName) => void}
@@ -129,51 +94,25 @@ export declare const PathParamProperty: () => (target: any, propertyName: any) =
  * @returns {(target: Object, propertyKey: (string | symbol)) => void}
  * @constructor
  */
-export declare const Mapper: (mapper: Function) => (target: Object, propertyKey: string | symbol) => void;
+export declare const Mapper: <T>(mapper: keyof T) => (target: Object, propertyKey: string | symbol) => void;
 /**
  *
- * @param {{[p: string]: T}} headers
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
+ * @param key
  */
-export declare const Headers: <T extends any>(headers: {
-    [key: string]: T;
-}) => (target: Object, propertyKey: string) => void;
+export declare const Header: (key?: string) => (target: Object, propertyKey: string | symbol, index_param: number) => void;
 /**
  *
  * @param {(request: Request_) => Request_} before_
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export declare const Before: (before_: (request: FeignRequest) => FeignRequest) => (target: Object, propertyKey: string) => void;
+export declare const Before: <T>(before_: keyof T) => (target: Object, propertyKey: string) => void;
 /**
  *
  * @param {FeignHandler} handler
  * @returns {(target: Object, propertyKey: string) => void}
  * @constructor
  */
-export declare const HandlerError: (handler: FeignHandler) => (target: Object, propertyKey: string) => void;
-/**
- *
- */
-export declare class FeignRequestException {
-    error: string;
-    statusCode: number;
-    message: string;
-    constructor(error: string, statusCode: number, message: string);
-}
-/**
- *
- */
-export declare type HttpObservable<O> = void & Observable<O>;
-/**
- *
- */
-export interface FeignRequest {
-    readonly method: string;
-    body: any;
-    readonly headers: {
-        [key: string]: any;
-    };
-    readonly url: string;
-}
+export declare const HandlerError: <T>(handler: keyof T) => (target: Object, propertyKey: string) => void;
