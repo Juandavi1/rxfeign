@@ -23,7 +23,9 @@ export class Posts{
 
 export const URL = 'https://jsonplaceholder.typicode.com/posts'
 
-@Client(URL)
+@Client({
+	url: URL
+})
 export class RepoPost implements FeignInterceptor{
 
 	constructor(){

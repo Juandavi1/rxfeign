@@ -12,9 +12,12 @@ $ npm install --save rxfeign
 
 #### Anotaciones
    - *@Client*  
+   Esta anotacion permite definir la configuracion global para todos los request dentro de la clase.
+   
    Recibe dos tipos de parametro, un string u objeto
+   
         * string : url base (http://domain/)
-        * objecto : permite definir una configuracion global para todos los request dentro de esta clase. los atributos seran pasados a la instancia de axios :
+        * objecto : Los atributos seran pasados a la instancia de axios
 
 ```typescript
     export interface FeignConfig {
@@ -232,6 +235,7 @@ $ npm install --save rxfeign
     }
 ```
 ```typescript
+    @Client(...)
     export class Class {
         public before(req: FeignRequest): FeignRequest{
             req.headers.set("otro","header")
