@@ -5,9 +5,9 @@ realizar peticiones por medio de anotaciones. servidor y cliente.
 
 #### Instalacion 
 ```sh
-$ yarn add rxfeign
+$ yarn add feignrx
 
-$ npm install --save rxfeign
+$ npm install --save feignrx
 ```
 
 #### Anotaciones
